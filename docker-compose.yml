@@ -1,0 +1,20 @@
+services:
+  mysql:
+    image: mysql:latest
+    container_name: db-container
+    environment:
+      MYSQL_ROOT_PASSWORD: test123
+      MYSQL_DATABASE: gamepickd-db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init-mysql.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  mysql-data:
