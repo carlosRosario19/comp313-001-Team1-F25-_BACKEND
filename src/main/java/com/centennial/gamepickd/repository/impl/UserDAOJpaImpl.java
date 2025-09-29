@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -35,5 +36,14 @@ public class UserDAOJpaImpl implements UserDAO {
         } catch (Exception e){
             return Optional.empty();
         }
+    }
+
+    @Override
+    public List<User> findByUsernameOrEmail(String username, String email) {
+        String jpql = "SELECT u FROM User u WHERE u.username = :username OR u.email = :email";
+        return entityManager.createQuery(jpql, User.class)
+                .setParameter("username", username)
+                .setParameter("email", email)
+                .getResultList();
     }
 }

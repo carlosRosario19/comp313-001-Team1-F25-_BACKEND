@@ -93,6 +93,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, Routes.HEALTH_CHECK.val()).permitAll()
+                        .requestMatchers(HttpMethod.POST, Routes.ADD_MEMBER.val()).permitAll()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
