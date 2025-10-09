@@ -8,8 +8,8 @@ It includes instructions for **Linux**, **macOS**, and **Windows**.
 
 ## Prerequisites
 
-- **Docker** or **Podman** installed on your system  
-- **Java 25** installed  
+- **Docker** or **Podman** installed on your system.  
+- **Java 25** installed.  
 
 ---
 
