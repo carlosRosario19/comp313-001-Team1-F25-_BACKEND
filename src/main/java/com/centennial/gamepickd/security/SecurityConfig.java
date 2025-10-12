@@ -1,6 +1,7 @@
 package com.centennial.gamepickd.security;
 
 import com.centennial.gamepickd.services.impl.AppUserService;
+import com.centennial.gamepickd.util.enums.RoleType;
 import com.centennial.gamepickd.util.enums.Routes;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -94,6 +95,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, Routes.HEALTH_CHECK.val()).permitAll()
                         .requestMatchers(HttpMethod.POST, Routes.ADD_MEMBER.val()).permitAll()
+                        .requestMatchers(HttpMethod.POST, Routes.ADD_CONTRIBUTOR.val()).hasRole(RoleType.ADMIN.val())
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
