@@ -104,4 +104,70 @@ class UserDAOJpaImlTest {
         assertFalse(result.isPresent(), "User should not be found in the database.");
     }
 
+    @Transactional
+    @Test
+    void testFindByUsernameOrEmail_FindsByUsernameOrEmail() {
+        // Arrange
+        User user1 = new User();
+        user1.setUsername("john_doe");
+        user1.setEmail("john@example.com");
+        user1.setPassword("password123");
+        user1.setEnabled(true);
+
+        User user2 = new User();
+        user2.setUsername("jane_doe");
+        user2.setEmail("jane@example.com");
+        user2.setPassword("password456");
+        user2.setEnabled(true);
+
+        entityManager.persist(user1);
+        entityManager.persist(user2);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        // Case 1: Find by username
+        var resultByUsername = userDAO.findByUsernameOrEmail("john_doe", "nonexistent@example.com");
+
+        // Case 2: Find by email
+        var resultByEmail = userDAO.findByUsernameOrEmail("nonexistentUser", "jane@example.com");
+
+        // Case 3: Find by username OR email (both matching)
+        var resultByBoth = userDAO.findByUsernameOrEmail("john_doe", "john@example.com");
+
+        // Assert
+        // Username match
+        assertEquals(1, resultByUsername.size(), "Should find one user by username.");
+        assertEquals("john_doe", resultByUsername.get(0).getUsername());
+
+        // Email match
+        assertEquals(1, resultByEmail.size(), "Should find one user by email.");
+        assertEquals("jane@example.com", resultByEmail.get(0).getEmail());
+
+        // Both username or email match same user
+        assertEquals(1, resultByBoth.size(), "Should find the same user when both username and email match.");
+        assertEquals("john_doe", resultByBoth.get(0).getUsername());
+    }
+
+    @Transactional
+    @Test
+    void testFindByUsernameOrEmail_NoMatchFound() {
+        // Arrange
+        User user = new User();
+        user.setUsername("existing_user");
+        user.setEmail("existing@example.com");
+        user.setPassword("secret");
+        user.setEnabled(true);
+
+        entityManager.persist(user);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var result = userDAO.findByUsernameOrEmail("unknown_user", "unknown@example.com");
+
+        // Assert
+        assertTrue(result.isEmpty(), "Should return empty list when no match found.");
+    }
+
 }
