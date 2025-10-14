@@ -16,5 +16,23 @@ services:
       timeout: 10s
       retries: 5
 
+  s3mock:
+    image: adobe/s3mock:latest
+    container_name: s3mock
+    environment:
+      - initialBuckets=gamepickd-images
+      - root=/s3mock
+    ports:
+      - "9095:9090"   # host:container  (changed host port!)
+      - "9191:9191"
+    volumes:
+      - s3mock-data:/s3mock
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9095/" ]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+
 volumes:
   mysql-data:
+  s3mock-data:

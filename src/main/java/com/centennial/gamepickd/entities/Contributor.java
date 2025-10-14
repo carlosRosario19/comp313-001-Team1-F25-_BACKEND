@@ -2,6 +2,10 @@ package com.centennial.gamepickd.entities;
 
 import jakarta.persistence.*;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @NullMarked
 @Entity
@@ -13,6 +17,9 @@ public class Contributor extends PersonBase {
     @Column(name = "CONTRIBUTOR_ID")
     private long id;
 
+    @OneToMany(mappedBy = "contributor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private @Nullable List<Game> games = new ArrayList<>();
+
     public Contributor() {}
 
     public static class Builder {
@@ -21,6 +28,7 @@ public class Contributor extends PersonBase {
         private User user;
         private String firstName;
         private String lastName;
+        private List<Game> games;
 
         public Builder id(long val) {
             id = val;
@@ -38,6 +46,10 @@ public class Contributor extends PersonBase {
             lastName = val;
             return this;
         }
+        public Builder games(List<Game> val) {
+            games = val;
+            return this;
+        }
         public Contributor build() {
             return new Contributor(this);
         }
@@ -48,6 +60,7 @@ public class Contributor extends PersonBase {
         super.setUser(builder.user);
         super.setFirstName(builder.firstName);
         super.setLastName(builder.lastName);
+        games = builder.games;
     }
 
     public long getId() {
@@ -58,13 +71,26 @@ public class Contributor extends PersonBase {
         this.id = id;
     }
 
+    public @Nullable List<Game> getGames() {
+        return games;
+    }
+
+    public void setGames(@Nullable List<Game> games) {
+        this.games = games;
+    }
+
     @Override
     public String toString() {
+        String gameTitles = (games != null && !games.isEmpty())
+                ? games.stream().map(Game::getTitle).toList().toString()
+                : "[]";
+
         return "Contributor{" +
                 "id=" + id +
                 ", user='" + super.getUser() + '\'' +
                 ", firstName='" + super.getFirstName() + '\'' +
                 ", lastName='" + super.getLastName() + '\'' +
+                ", games=" + gameTitles +
                 '}';
     }
 

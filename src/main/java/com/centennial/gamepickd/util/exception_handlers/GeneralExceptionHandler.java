@@ -32,4 +32,6 @@ public class GeneralExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
     }
+
+
 }

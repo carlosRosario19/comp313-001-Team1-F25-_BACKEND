@@ -96,6 +96,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, Routes.HEALTH_CHECK.val()).permitAll()
                         .requestMatchers(HttpMethod.POST, Routes.ADD_MEMBER.val()).permitAll()
                         .requestMatchers(HttpMethod.POST, Routes.ADD_CONTRIBUTOR.val()).hasRole(RoleType.ADMIN.val())
+                        .requestMatchers(HttpMethod.POST, Routes.ADD_GAME.val()).hasRole(RoleType.CONTRIBUTOR.val())
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
