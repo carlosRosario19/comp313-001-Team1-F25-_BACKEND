@@ -54,11 +54,11 @@ public class Genre {
         this.label = label;
     }
 
-    public List<Game> getBooks() {
+    public List<Game> getGames() {
         return games;
     }
 
-    public void setBooks(List<Game> books) {
+    public void setGames(List<Game> books) {
         this.games = books;
     }
 
@@ -66,7 +66,7 @@ public class Genre {
     public String toString() {
         return "Genre{" +
                 "label='" + label.getVal() + '\'' +
-                ", books=" + games +
+                ", games=" + games +
                 '}';
     }
 }

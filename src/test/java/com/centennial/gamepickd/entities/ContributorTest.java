@@ -3,11 +3,16 @@ package com.centennial.gamepickd.entities;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class ContributorTest {
 
     private User testUser;
+    private Game game1;
+    private Game game2;
 
     @BeforeEach
     void setUp() {
@@ -16,6 +21,14 @@ class ContributorTest {
         testUser.setUsername("testuser");
         testUser.setEmail("test@example.com");
         testUser.setPassword("test123");
+
+        game1 = new Game();
+        game1.setId(10L);
+        game1.setTitle("Game One");
+
+        game2 = new Game();
+        game2.setId(20L);
+        game2.setTitle("Game Two");
     }
 
     @Test
@@ -31,6 +44,26 @@ class ContributorTest {
         assertEquals(testUser, contributor.getUser());
         assertEquals("John", contributor.getFirstName());
         assertEquals("Doe", contributor.getLastName());
+        assertNull(contributor.getGames());
+    }
+
+    @Test
+    void testBuilderWithGamesList() {
+        List<Game> games = List.of(game1, game2);
+
+        Contributor contributor = new Contributor.Builder()
+                .id(101L)
+                .user(testUser)
+                .firstName("Jane")
+                .lastName("Smith")
+                .games(games)
+                .build();
+
+        assertEquals(101L, contributor.getId());
+        assertEquals("Jane", contributor.getFirstName());
+        assertNotNull(contributor.getGames());
+        assertEquals(2, contributor.getGames().size());
+        assertEquals("Game One", contributor.getGames().getFirst().getTitle());
     }
 
     @Test
@@ -41,10 +74,23 @@ class ContributorTest {
         contributor.setFirstName("Alice");
         contributor.setLastName("Smith");
 
+        List<Game> games = new ArrayList<>();
+        games.add(game1);
+        contributor.setGames(games);
+
         assertEquals(200L, contributor.getId());
         assertEquals(testUser, contributor.getUser());
         assertEquals("Alice", contributor.getFirstName());
         assertEquals("Smith", contributor.getLastName());
+        assertNotNull(contributor.getGames());
+        assertEquals(1, contributor.getGames().size());
+    }
+
+    @Test
+    void testSetGamesWithNullList() {
+        Contributor contributor = new Contributor();
+        contributor.setGames(null);
+        assertNull(contributor.getGames());
     }
 
     @Test
@@ -65,8 +111,39 @@ class ContributorTest {
     }
 
     @Test
+    void testToStringHandlesEmptyGamesListGracefully() {
+        Contributor contributor = new Contributor.Builder()
+                .id(400L)
+                .user(testUser)
+                .firstName("Eve")
+                .lastName("Stone")
+                .games(new ArrayList<>())
+                .build();
+
+        String toString = contributor.toString();
+        assertTrue(toString.contains("games=[]"));
+    }
+
+    @Test
+    void testToStringIncludesGameTitles() {
+        List<Game> games = List.of(game1, game2);
+
+        Contributor contributor = new Contributor.Builder()
+                .id(500L)
+                .user(testUser)
+                .firstName("Luke")
+                .lastName("Skywalker")
+                .games(games)
+                .build();
+
+        String toString = contributor.toString();
+        assertTrue(toString.contains("Game One"));
+        assertTrue(toString.contains("Game Two"));
+    }
+
+    @Test
     void testDefaultConstructor() {
         Contributor contributor = new Contributor();
-        assertNotNull(contributor); // should create empty object
+        assertNotNull(contributor);
     }
 }

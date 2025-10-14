@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -63,5 +64,45 @@ class ContributorDAOJpaImplTest {
         assertThat(persisted.getFirstName()).isEqualTo("John");
         assertThat(persisted.getLastName()).isEqualTo("Doe");
         assertThat(persisted.getUser().getUsername()).isEqualTo("johndoe");
+    }
+
+    @Transactional
+    @Test
+    void findByUsername_ShouldReturnContributor_WhenExists() {
+        // Arrange
+        User user = new User();
+        user.setUsername("janedoe");
+        user.setEmail("jane@example.com");
+        user.setPassword("hashedPass");
+        user.setEnabled(true);
+        entityManager.persist(user);
+
+        Contributor contributor = new Contributor.Builder()
+                .firstName("Jane")
+                .lastName("Doe")
+                .user(user)
+                .build();
+        contributor.setCreatedAt(LocalDateTime.now());
+        entityManager.persist(contributor);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        Optional<Contributor> result = contributorDAO.findByUsername("janedoe");
+
+        // Assert
+        assertThat(result).isPresent();
+        assertThat(result.get().getFirstName()).isEqualTo("Jane");
+        assertThat(result.get().getUser().getUsername()).isEqualTo("janedoe");
+    }
+
+    @Transactional
+    @Test
+    void findByUsername_ShouldReturnEmpty_WhenContributorDoesNotExist() {
+        // Act
+        Optional<Contributor> result = contributorDAO.findByUsername("ghost");
+
+        // Assert
+        assertThat(result).isEmpty();
     }
 }
