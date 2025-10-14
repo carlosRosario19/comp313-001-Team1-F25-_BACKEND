@@ -1,11 +1,9 @@
 package com.centennial.gamepickd.util;
 
 import com.centennial.gamepickd.dtos.AddContributorDTO;
+import com.centennial.gamepickd.dtos.AddGameDTO;
 import com.centennial.gamepickd.dtos.AddMemberDTO;
-import com.centennial.gamepickd.entities.AuthorityType;
-import com.centennial.gamepickd.entities.Contributor;
-import com.centennial.gamepickd.entities.Member;
-import com.centennial.gamepickd.entities.User;
+import com.centennial.gamepickd.entities.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -52,5 +50,9 @@ public class Mapper {
                 .lastName(dto.lastName())
                 .user(user)
                 .build();
+    }
+
+    public Game addGameDtoToGame(AddGameDTO addGameDTO) {
+        return new Game(addGameDTO.title(), addGameDTO.description());
     }
 }
