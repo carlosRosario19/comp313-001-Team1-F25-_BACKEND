@@ -1,26 +1,35 @@
 package com.centennial.gamepickd.controllers;
 
 import com.centennial.gamepickd.dtos.AddGameDTO;
+import com.centennial.gamepickd.dtos.GameDTO;
 import com.centennial.gamepickd.services.contracts.GameService;
 import com.centennial.gamepickd.services.contracts.StorageService;
 import com.centennial.gamepickd.util.Exceptions;
+import com.centennial.gamepickd.util.enums.GenreType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -118,6 +127,74 @@ class GameControllerTest {
                         .param("genres", validGameDTO.genres())
                         .param("contributorUsername", validGameDTO.contributorUsername())
         ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getAllGames_shouldReturnOkAndPagedResults() throws Exception {
+        // Arrange — mock service returning one sample GameDTO
+        GameDTO sampleGame = new GameDTO(
+                1L,
+                "Sample Game",
+                "A cool adventure game",
+                "cover.png",
+                Set.of(GenreType.RPG),
+                LocalDateTime.now()  // <-- added postedAt
+        );
+
+        Page<GameDTO> mockPage = new PageImpl<>(List.of(sampleGame), PageRequest.of(0, 12), 1);
+        when(gameService.getAll(any())).thenReturn(mockPage);
+
+        // Act + Assert
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/games")
+                        .param("page", "0")
+                        .param("size", "12"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getAllGames_shouldReturnEmptyPage_whenNoGamesExist() throws Exception {
+        // Arrange
+        Page<GameDTO> emptyPage = new PageImpl<>(List.of(), PageRequest.of(0, 12), 0);
+        when(gameService.getAll(any())).thenReturn(emptyPage);
+
+        // Act + Assert
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/games"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.totalElements").value(0))
+                .andExpect(jsonPath("$._embedded").doesNotExist());
+    }
+
+    @Test
+    void getAllGames_shouldReturnFilteredResults_whenTitleIsProvided() throws Exception {
+        // Arrange
+        GameDTO filteredGame = new GameDTO(
+                2L,
+                "Zelda Adventure",
+                "A fantasy RPG",
+                "zelda.png",
+                Set.of(GenreType.RPG, GenreType.MMORPG),
+                LocalDateTime.now()
+        );
+
+        Page<GameDTO> filteredPage = new PageImpl<>(List.of(filteredGame), PageRequest.of(0, 12), 1);
+        when(gameService.getAll(any())).thenReturn(filteredPage);
+
+        // Act + Assert
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/games")
+                        .param("title", "Zelda"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._embedded.gameDTOList[0].title").value("Zelda Adventure"))
+                .andExpect(jsonPath("$._embedded.gameDTOList[0].genres[0]").value("RPG"));
+    }
+
+    @Test
+    void getAllGames_shouldReturnBadRequest_whenPageOutOfRange() throws Exception {
+        // Arrange
+        when(gameService.getAll(any())).thenThrow(new Exceptions.PageOutOfRangeException("Page out of range"));
+
+        // Act + Assert
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/games").param("page", "999"))
+                .andExpect(status().isBadRequest());
     }
 
 }

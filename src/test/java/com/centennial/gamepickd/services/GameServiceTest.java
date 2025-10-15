@@ -1,6 +1,8 @@
 package com.centennial.gamepickd.services;
 
 import com.centennial.gamepickd.dtos.AddGameDTO;
+import com.centennial.gamepickd.dtos.GameDTO;
+import com.centennial.gamepickd.dtos.SearchGameDTO;
 import com.centennial.gamepickd.entities.Contributor;
 import com.centennial.gamepickd.entities.Game;
 import com.centennial.gamepickd.entities.Genre;
@@ -12,18 +14,24 @@ import com.centennial.gamepickd.services.contracts.StorageService;
 import com.centennial.gamepickd.services.impl.GameServiceImpl;
 import com.centennial.gamepickd.util.Exceptions;
 import com.centennial.gamepickd.util.Mapper;
+import com.centennial.gamepickd.util.enums.GenreType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class GameServiceTest {
@@ -170,5 +178,84 @@ class GameServiceTest {
 
         verify(storageService, never()).store(any());
         verify(gameDAO).create(any(Game.class));
+    }
+
+    @Test
+    void getAll_shouldReturnMappedPage_whenGamesExist() throws Exceptions.PageOutOfRangeException {
+        // Arrange
+        SearchGameDTO dto = new SearchGameDTO(0, 10, null, null);
+        Game game = new Game();
+        game.setId(1L);
+        game.setTitle("Test Game");
+        game.setDescription("Desc");
+        game.setCoverImagePath("cover.png");
+        game.setCreatedAt(LocalDateTime.now());
+        Page<Game> gamePage = new PageImpl<>(List.of(game));
+
+        when(gameDAO.findAllOrderByPostedAtDesc(any(), any(), any(Pageable.class)))
+                .thenReturn(gamePage);
+
+        // Act
+        Page<GameDTO> result = gameService.getAll(dto);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        GameDTO dtoResult = result.getContent().get(0);
+        assertEquals(game.getId(), dtoResult.id());
+        assertEquals(game.getTitle(), dtoResult.title());
+        assertEquals(game.getCoverImagePath(), dtoResult.coverImagePath());
+        assertEquals(game.getCreatedAt(), dtoResult.postedAt());
+    }
+
+    // Exception: negative page number
+    @Test
+    void getAll_shouldThrow_whenPageNumberNegative() {
+        SearchGameDTO dto = new SearchGameDTO(-1, 10, null, null);
+
+        Exceptions.PageOutOfRangeException ex = assertThrows(
+                Exceptions.PageOutOfRangeException.class,
+                () -> gameService.getAll(dto)
+        );
+        assertTrue(ex.getMessage().contains("cannot be negative"));
+    }
+
+    // Exception: page size 0
+    @Test
+    void getAll_shouldThrow_whenPageSizeZero() {
+        SearchGameDTO dto = new SearchGameDTO(0, 0, null, null);
+
+        Exceptions.PageOutOfRangeException ex = assertThrows(
+                Exceptions.PageOutOfRangeException.class,
+                () -> gameService.getAll(dto)
+        );
+        assertTrue(ex.getMessage().contains("must be greater than 0"));
+    }
+
+    // Exception: page size exceeds max
+    @Test
+    void getAll_shouldThrow_whenPageSizeTooLarge() {
+        SearchGameDTO dto = new SearchGameDTO(0, 101, null, null);
+
+        Exceptions.PageOutOfRangeException ex = assertThrows(
+                Exceptions.PageOutOfRangeException.class,
+                () -> gameService.getAll(dto)
+        );
+        assertTrue(ex.getMessage().contains("cannot exceed"));
+    }
+
+    // Filtered search: title and genres provided
+    @Test
+    void getAll_shouldPassTitleAndGenresToDAO() throws Exceptions.PageOutOfRangeException {
+        SearchGameDTO dto = new SearchGameDTO(0, 10, "Zelda", Set.of(GenreType.RPG));
+
+        Page<Game> emptyPage = new PageImpl<>(List.of());
+        when(gameDAO.findAllOrderByPostedAtDesc(eq("Zelda"), eq(Set.of(GenreType.RPG)), any(Pageable.class)))
+                .thenReturn(emptyPage);
+
+        Page<GameDTO> result = gameService.getAll(dto);
+
+        verify(gameDAO).findAllOrderByPostedAtDesc(eq("Zelda"), eq(Set.of(GenreType.RPG)), any(Pageable.class));
+        assertEquals(0, result.getTotalElements());
     }
 }

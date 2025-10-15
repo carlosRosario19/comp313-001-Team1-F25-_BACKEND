@@ -42,4 +42,10 @@ public class Exceptions {
             super(message, cause);
         }
     }
+
+    public static class PageOutOfRangeException extends Exception {
+        public PageOutOfRangeException(String message) {
+            super(message);
+        }
+    }
 }

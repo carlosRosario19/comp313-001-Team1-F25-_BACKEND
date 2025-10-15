@@ -3,11 +3,17 @@ package com.centennial.gamepickd.util;
 import com.centennial.gamepickd.dtos.AddContributorDTO;
 import com.centennial.gamepickd.dtos.AddGameDTO;
 import com.centennial.gamepickd.dtos.AddMemberDTO;
+import com.centennial.gamepickd.dtos.GameDTO;
 import com.centennial.gamepickd.entities.*;
+import com.centennial.gamepickd.util.enums.GenreType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class Mapper {
@@ -55,4 +61,22 @@ public class Mapper {
     public Game addGameDtoToGame(AddGameDTO addGameDTO) {
         return new Game(addGameDTO.title(), addGameDTO.description());
     }
+
+    public final Function<Game, GameDTO> gameToGameDTO = game ->  {
+
+        Set<GenreType> genres = Optional.ofNullable(game.getGenres())
+                .orElse(List.of())
+                .stream()
+                .map(Genre::getLabel)
+                .collect(Collectors.toSet());
+
+        return new GameDTO(
+                game.getId(),
+                game.getTitle(),
+                game.getDescription(),
+                game.getCoverImagePath(),
+                genres,
+                game.getCreatedAt()
+        );
+    };
 }

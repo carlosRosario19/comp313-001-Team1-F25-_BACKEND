@@ -10,7 +10,7 @@ import java.util.List;
 @NullMarked
 @Entity
 @Table(name = "GAMES")
-public class Game extends Auditable{
+public class Game extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
