@@ -98,6 +98,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, Routes.CONTRIBUTORS.val()).hasRole(RoleType.ADMIN.val())
                         .requestMatchers(HttpMethod.POST, Routes.GAMES.val()).hasRole(RoleType.CONTRIBUTOR.val())
                         .requestMatchers(HttpMethod.GET, Routes.GAMES.val()).permitAll()
+                        .requestMatchers(HttpMethod.GET, Routes.IMAGES.val()).permitAll()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
