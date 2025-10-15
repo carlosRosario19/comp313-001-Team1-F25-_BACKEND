@@ -94,9 +94,10 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, Routes.HEALTH_CHECK.val()).permitAll()
-                        .requestMatchers(HttpMethod.POST, Routes.ADD_MEMBER.val()).permitAll()
-                        .requestMatchers(HttpMethod.POST, Routes.ADD_CONTRIBUTOR.val()).hasRole(RoleType.ADMIN.val())
-                        .requestMatchers(HttpMethod.POST, Routes.ADD_GAME.val()).hasRole(RoleType.CONTRIBUTOR.val())
+                        .requestMatchers(HttpMethod.POST, Routes.MEMBERS.val()).permitAll()
+                        .requestMatchers(HttpMethod.POST, Routes.CONTRIBUTORS.val()).hasRole(RoleType.ADMIN.val())
+                        .requestMatchers(HttpMethod.POST, Routes.GAMES.val()).hasRole(RoleType.CONTRIBUTOR.val())
+                        .requestMatchers(HttpMethod.GET, Routes.GAMES.val()).permitAll()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))

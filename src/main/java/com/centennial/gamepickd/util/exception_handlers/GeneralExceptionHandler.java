@@ -1,5 +1,6 @@
 package com.centennial.gamepickd.util.exception_handlers;
 
+import com.centennial.gamepickd.util.Exceptions;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -30,6 +31,14 @@ public class GeneralExceptionHandler {
         }
         problemDetail.setProperty("violations", violations);
 
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ProblemDetail> handlePageOutOfRangeException(Exceptions.PageOutOfRangeException ex, HttpServletRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problemDetail.setTitle("Page out of Range");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
     }
 
