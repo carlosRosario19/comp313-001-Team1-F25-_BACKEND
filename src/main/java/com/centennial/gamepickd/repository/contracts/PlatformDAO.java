@@ -7,4 +7,5 @@ import java.util.Set;
 
 public interface PlatformDAO {
     Set<Platform> findByLabels(Set<PlatformType> labels);
+    Set<PlatformType> findAll();
 }
