@@ -101,6 +101,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, Routes.IMAGES.val()).permitAll()
                         .requestMatchers(HttpMethod.GET, Routes.GENRES.val()).permitAll()
                         .requestMatchers(HttpMethod.GET, Routes.PLATFORMS.val()).permitAll()
+                        .requestMatchers(HttpMethod.GET, Routes.PUBLISHERS.val()).permitAll()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))

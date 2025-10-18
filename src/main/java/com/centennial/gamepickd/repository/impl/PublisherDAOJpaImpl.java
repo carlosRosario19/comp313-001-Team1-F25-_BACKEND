@@ -2,12 +2,15 @@ package com.centennial.gamepickd.repository.impl;
 
 import com.centennial.gamepickd.entities.Publisher;
 import com.centennial.gamepickd.repository.contracts.PublisherDAO;
+import com.centennial.gamepickd.util.enums.PlatformType;
 import com.centennial.gamepickd.util.enums.PublisherType;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public class PublisherDAOJpaImpl implements PublisherDAO {
@@ -31,5 +34,11 @@ public class PublisherDAOJpaImpl implements PublisherDAO {
         } catch (Exception e){
             return Optional.empty();
         }
+    }
+
+    @Override
+    public Set<PublisherType> findAll() {
+        String query = "SELECT p.name FROM Publisher p";
+        return new HashSet<>(entityManager.createQuery(query, PublisherType.class).getResultList());
     }
 }
