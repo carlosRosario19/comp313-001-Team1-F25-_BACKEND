@@ -20,4 +20,29 @@ public class GameExceptionHandlers {
         problemDetail.setInstance(URI.create(request.getRequestURI()));
         return ResponseEntity.status(HttpStatus.CONFLICT).body(problemDetail);
     }
+
+    @ExceptionHandler
+    public ResponseEntity<ProblemDetail> handlePublisherNotFoundException(Exceptions.PublisherNotFoundException ex, HttpServletRequest request){
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problemDetail.setTitle("Publisher Not Found");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ProblemDetail> handlePlatformNotFoundException(Exceptions.PlatformNotFoundException ex, HttpServletRequest request){
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problemDetail.setTitle("Platform Not Found");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ProblemDetail> handleGenreNotFoundException(Exceptions.GenreNotFoundException ex, HttpServletRequest request){
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problemDetail.setTitle("Genre Not Found");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
+    }
+
 }

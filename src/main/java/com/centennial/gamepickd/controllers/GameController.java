@@ -34,10 +34,19 @@ public class GameController {
             @RequestParam("title") String title,
             @RequestParam("description") String description,
             @RequestParam("genres") String genres,
+            @RequestParam("publisher") String publisher,
+            @RequestParam("platforms") String platforms,
             @RequestParam("contributorUsername") String contributorUsername,
             @RequestParam("coverImage") MultipartFile coverImage
-    ) throws Exceptions.GameAlreadyExistsException, Exceptions.StorageException, Exceptions.ContributorNotFoundException {
-        AddGameDTO addGameDTO = new AddGameDTO(title, description, genres, contributorUsername, coverImage);
+    ) throws
+            Exceptions.GameAlreadyExistsException,
+            Exceptions.StorageException,
+            Exceptions.ContributorNotFoundException,
+            Exceptions.PlatformNotFoundException,
+            Exceptions.GenreNotFoundException,
+            Exceptions.PublisherNotFoundException {
+
+        AddGameDTO addGameDTO = new AddGameDTO(title, description, genres, publisher, platforms, contributorUsername, coverImage);
         gameService.add(addGameDTO);
     }
 

@@ -4,18 +4,15 @@ import com.centennial.gamepickd.dtos.AddGameDTO;
 import com.centennial.gamepickd.dtos.GameDTO;
 import com.centennial.gamepickd.dtos.RenamedMultipartFile;
 import com.centennial.gamepickd.dtos.SearchGameDTO;
-import com.centennial.gamepickd.entities.Contributor;
-import com.centennial.gamepickd.entities.Game;
-import com.centennial.gamepickd.entities.Genre;
-import com.centennial.gamepickd.repository.contracts.ContributorDAO;
-import com.centennial.gamepickd.repository.contracts.GameDAO;
-import com.centennial.gamepickd.repository.contracts.GenreDAO;
+import com.centennial.gamepickd.entities.*;
+import com.centennial.gamepickd.repository.contracts.*;
 import com.centennial.gamepickd.services.contracts.GameService;
 import com.centennial.gamepickd.services.contracts.StorageService;
 import com.centennial.gamepickd.util.Exceptions;
 import com.centennial.gamepickd.util.Mapper;
 import com.centennial.gamepickd.util.enums.GenreType;
-import org.hibernate.annotations.Cache;
+import com.centennial.gamepickd.util.enums.PlatformType;
+import com.centennial.gamepickd.util.enums.PublisherType;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -35,6 +32,8 @@ public class GameServiceImpl implements GameService {
     private final GameDAO gameDAO;
     private final GenreDAO genreDAO;
     private final ContributorDAO contributorDAO;
+    private final PublisherDAO publisherDAO;
+    private final PlatformDAO platformDAO;
     private final StorageService storageService;
     private final Mapper mapper;
     private static final int MAX_PAGE_SIZE = 100;
@@ -43,12 +42,16 @@ public class GameServiceImpl implements GameService {
             @Qualifier("gameDAOJpaImpl") GameDAO gameDAO,
             @Qualifier("genreDAOJpaImpl") GenreDAO genreDAO,
             @Qualifier("contributorDAOJpaImpl") ContributorDAO contributorDAO,
+            @Qualifier("publisherDAOJpaImpl") PublisherDAO publisherDAO,
+            @Qualifier("platformDAOJpaImpl") PlatformDAO platformDAO,
             @Qualifier("s3StorageService") StorageService storageService,
             Mapper mapper
     ) {
         this.gameDAO = gameDAO;
         this.genreDAO = genreDAO;
         this.contributorDAO = contributorDAO;
+        this.publisherDAO = publisherDAO;
+        this.platformDAO = platformDAO;
         this.storageService = storageService;
         this.mapper = mapper;
     }
@@ -56,7 +59,14 @@ public class GameServiceImpl implements GameService {
     @Transactional
     @CacheEvict(value = "gamesCache", allEntries = true)
     @Override
-    public void add(AddGameDTO addGameDTO) throws Exceptions.GameAlreadyExistsException, Exceptions.StorageException, Exceptions.ContributorNotFoundException {
+    public void add(AddGameDTO addGameDTO) throws
+            Exceptions.GameAlreadyExistsException,
+            Exceptions.StorageException,
+            Exceptions.ContributorNotFoundException,
+            Exceptions.PublisherNotFoundException,
+            Exceptions.PlatformNotFoundException,
+            Exceptions.GenreNotFoundException{
+
         // Check if the game exists
         Optional<Game> existingGame = gameDAO.findByTitle(addGameDTO.title());
         if(existingGame.isPresent())
@@ -66,22 +76,42 @@ public class GameServiceImpl implements GameService {
         Contributor contributor = contributorDAO.findByUsername(addGameDTO.contributorUsername())
                 .orElseThrow(() -> new Exceptions.ContributorNotFoundException("Contributor not found with username " + addGameDTO.contributorUsername()));
 
+        // Query the Publisher, and if not found, throw exception
+        Publisher publisher = publisherDAO.findByLabel(PublisherType.fromValue(addGameDTO.publisher()))
+                .orElseThrow(() -> new Exceptions.PublisherNotFoundException("Publisher not found with name " + addGameDTO.publisher()));
+
         // Map the DTO to a game entity
         Game game = mapper.addGameDtoToGame(addGameDTO);
 
+        // Query the Platforms, and if not found, throw exception PlatformNotFound
+        Set<PlatformType> platformLabels;
+        try {
+            platformLabels = parsePlatforms(addGameDTO.platforms());
+        } catch (IllegalArgumentException e) {
+            throw new Exceptions.PlatformNotFoundException("One or more provided platforms are invalid: " + addGameDTO.platforms());
+        }
+
+        // Fetch platform entities from DB
+        Set<Platform> platforms = platformDAO.findByLabels(platformLabels);
+
+        // Add platforms to entity
+        game.addPlatforms(platforms);
         // Set contributor
         game.setContributor(contributor);
+        // Set publisher
+        game.setPublisher(publisher);
 
-        Set<String> genres = parseGenres(addGameDTO.genres());
-        for (String desc : genres) {
-            try {
-                GenreType genreType = GenreType.fromLabel(desc);
-                Optional<Genre> genre = genreDAO.findByLabel(genreType);
-                genre.ifPresent(game::addGenre);
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid genre provided: " + desc);
-            }
+        Set<GenreType> genreLabels;
+        try{
+            genreLabels = parseGenres(addGameDTO.genres());
+        } catch (IllegalArgumentException e) {
+            throw new Exceptions.GenreNotFoundException("One or more provided genres are invalid: " + addGameDTO.genres());
         }
+
+        // Fetch genres entities from DB
+        Set<Genre> genres = genreDAO.findByLabels(genreLabels);
+        // Add genres to entity
+        game.addGenres(genres);
 
         // Handle file upload
         String filename = null;
@@ -129,9 +159,19 @@ public class GameServiceImpl implements GameService {
         return gamePage.map(mapper.gameToGameDTO);
     }
 
-    private Set<String> parseGenres(String genresString) {
+    private Set<GenreType> parseGenres(String genresString) {
         return Arrays.stream(genresString.split(","))
                 .map(String::trim)
+                .map(String::toUpperCase)
+                .map(GenreType::fromValue)
+                .collect(Collectors.toSet());
+    }
+
+    private Set<PlatformType> parsePlatforms(String platformsString) {
+        return Arrays.stream(platformsString.split(","))
+                .map(String::trim)
+                .map(String::toUpperCase)
+                .map(PlatformType::fromValue)
                 .collect(Collectors.toSet());
     }
 }

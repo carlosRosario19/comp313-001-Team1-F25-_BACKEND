@@ -13,6 +13,6 @@ public class GenreTypeConverter implements AttributeConverter<GenreType, String>
 
     @Override
     public GenreType convertToEntityAttribute(String dbValue) {
-        return dbValue != null ? GenreType.fromLabel(dbValue) : null;
+        return dbValue != null ? GenreType.fromValue(dbValue) : null;
     }
 }

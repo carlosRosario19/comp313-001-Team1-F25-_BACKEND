@@ -6,6 +6,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @NullMarked
 @Entity
@@ -32,9 +33,19 @@ public class Game extends Auditable {
             inverseJoinColumns = @JoinColumn(name = "GENRE_ID"))
     private @Nullable List<Genre> genres;
 
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.REFRESH})
+    @JoinTable(name = "GAMES_PLATFORMS",
+            joinColumns = @JoinColumn(name = "GAME_ID"),
+            inverseJoinColumns = @JoinColumn(name = "PLATFORM_ID"))
+    private @Nullable List<Platform> platforms;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CONTRIBUTOR_ID", nullable = false)
     private @Nullable Contributor contributor;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PUBLISHER_ID", nullable = false)
+    private @Nullable Publisher publisher;
 
     public Game(){}
 
@@ -43,11 +54,13 @@ public class Game extends Auditable {
         this.description = description;
     }
 
-    public Game(String title, String description, String coverImagePath, @Nullable List<Genre> genres, @Nullable Contributor contributor) {
+    public Game(String title, String description, String coverImagePath, @Nullable List<Genre> genres, @Nullable List<Platform> platforms, @Nullable Contributor contributor, @Nullable Publisher publisher) {
         this.title = title;
         this.description = description;
         this.coverImagePath = coverImagePath;
         this.genres = genres;
+        this.platforms = platforms;
+        this.publisher = publisher;
         this.contributor = contributor;
     }
 
@@ -99,11 +112,34 @@ public class Game extends Auditable {
         this.contributor = contributor;
     }
 
-    public void addGenre(Genre genre){
-        if(this.genres == null){
+    public @Nullable List<Platform> getPlatforms() {
+        return platforms;
+    }
+
+    public void setPlatforms(@Nullable List<Platform> platforms) {
+        this.platforms = platforms;
+    }
+
+    public @Nullable Publisher getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(@Nullable Publisher publisher) {
+        this.publisher = publisher;
+    }
+
+    public void addGenres(Set<Genre> genres) {
+        if(this.genres == null) {
             this.genres = new ArrayList<>();
         }
-        this.genres.add(genre);
+        this.genres.addAll(genres);
+    }
+
+    public void addPlatforms(Set<Platform> platforms) {
+        if(this.platforms == null) {
+            this.platforms = new ArrayList<>();
+        }
+        this.platforms.addAll(platforms);
     }
 
     @Override
@@ -114,7 +150,9 @@ public class Game extends Auditable {
                 ", description='" + description + '\'' +
                 ", coverImagePath='" + coverImagePath + '\'' +
                 ", genres=" + genres +
+                ", platforms=" + platforms +
                 ", contributor=" + contributor +
+                ", publisher=" + publisher +
                 '}';
     }
 }

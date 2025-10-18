@@ -11,8 +11,14 @@ public record AddGameDTO(
         @NotBlank(message = "Description is required")
         String description,
 
-        @NotBlank(message = "Genres are is required")
+        @NotBlank(message = "Genres are required")
         String genres,
+
+        @NotBlank(message = "Publisher is required")
+        String publisher,
+
+        @NotBlank(message = "Platforms are required")
+        String platforms,
 
         @NotBlank(message = "Contributor's username is required")
         String contributorUsername,

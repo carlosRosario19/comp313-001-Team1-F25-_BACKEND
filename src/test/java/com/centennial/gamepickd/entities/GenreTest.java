@@ -92,14 +92,14 @@ class GenreTest {
 
     @Test
     void testGenreTypeFromLabelValid() {
-        assertEquals(GenreType.INDIE, GenreType.fromLabel("indie"));
-        assertEquals(GenreType.SURVIVAL, GenreType.fromLabel("SURVIVAL"));
+        assertEquals(GenreType.INDIE, GenreType.fromValue("indie"));
+        assertEquals(GenreType.SURVIVAL, GenreType.fromValue("SURVIVAL"));
     }
 
     @Test
     void testGenreTypeFromLabelInvalidThrowsException() {
         Exception exception = assertThrows(IllegalArgumentException.class,
-                () -> GenreType.fromLabel("PUZZLE"));
+                () -> GenreType.fromValue("PUZZLE"));
 
         assertTrue(exception.getMessage().contains("Unknown genre label"));
     }
