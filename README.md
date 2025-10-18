@@ -76,6 +76,7 @@ _No DTO required — uses Basic Auth (username & password)._
 
 ### POST `/api/contributors`
 Registers a new contributor.
+This endpoint is only allowed to `{ADMIN, CONTRIBUTOR}` users.
 
 #### Request Body
 ```json
@@ -107,6 +108,7 @@ Registers a new member.
 
 Adds a new game.
 Consumes: multipart/form-data
+This endpoint is only allowed to `{ADMIN, CONTRIBUTOR}` users.
 
 ### Request Body Example
 ```
@@ -134,6 +136,18 @@ Retrieves a stored cover image.
 Path Variable Example
 
 ```/api/images/dark_souls.jpg```
+
+### GET `/api/genres`
+
+Retrieves all genres.
+
+### GET `/api/platforms`
+
+Retrieves all platforms.
+
+### GET `/api/publishers`
+
+Retrieves all publishers.
 
 
 
