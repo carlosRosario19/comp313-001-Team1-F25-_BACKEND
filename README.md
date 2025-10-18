@@ -88,7 +88,7 @@ Registers a new contributor.
 }
 ```
 
-### POST /api/members
+### POST `/api/members`
 
 Registers a new member.
 
@@ -103,7 +103,7 @@ Registers a new member.
 }
 ```
 
-### POST /api/games
+### POST `/api/games`
 
 Adds a new game.
 Consumes: multipart/form-data
@@ -115,25 +115,25 @@ description=A challenging RPG
 genres=RPG,ADVENTURE
 publisher=EPIC_GAMES
 platforms=PC,PLAYSTATION
-contributorUsername=johndoe
-coverImage=@/path/to/image.jpg
+contributorUsername=contributor
+coverImage=image.jpg
 ```
 
-### GET /api/games
+### GET `/api/games`
 
 Retrieves paginated and optionally filtered list of games.
 
 Query Parameters Example
 
-/api/games?page=0&size=12&title=Zelda&genres=ADVENTURE&publisher=NINTENDO&platforms=SWITCH
+```/api/games?page=0&size=12&title=Zelda&genres=ADVENTURE&publisher=NINTENDO&platforms=SWITCH```
 
-### GET /api/images/{filename}
+### GET `/api/images/{filename}`
 
 Retrieves a stored cover image.
 
 Path Variable Example
 
-/api/images/dark_souls.jpg
+```/api/images/dark_souls.jpg```
 
 
 
