@@ -3,6 +3,8 @@ package com.centennial.gamepickd.repository.impl;
 import com.centennial.gamepickd.entities.Game;
 import com.centennial.gamepickd.repository.contracts.GameDAO;
 import com.centennial.gamepickd.util.enums.GenreType;
+import com.centennial.gamepickd.util.enums.PlatformType;
+import com.centennial.gamepickd.util.enums.PublisherType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
@@ -49,10 +51,10 @@ public class GameDAOJpaImpl implements GameDAO {
     }
 
     @Override
-    public Page<Game> findAllOrderByPostedAtDesc(String title, Set<GenreType> genres, Pageable pageable) {
+    public Page<Game> findAllOrderByPostedAtDesc(String title, Set<GenreType> genres, PublisherType publisher, Set<PlatformType> platforms, Pageable pageable) {
         // Base JPQL strings
-        String countJpql = "SELECT COUNT(DISTINCT g) FROM Game g LEFT JOIN g.genres gen WHERE 1=1";
-        String selectJpql = "SELECT DISTINCT g FROM Game g LEFT JOIN g.genres gen WHERE 1=1";
+        String countJpql = "SELECT COUNT(DISTINCT g) FROM Game g LEFT JOIN g.genres gen LEFT JOIN g.platforms plat WHERE 1=1";
+        String selectJpql = "SELECT DISTINCT g FROM Game g LEFT JOIN g.genres gen LEFT JOIN g.platforms plat WHERE 1=1";
 
         Map<String, Object> params = new HashMap<>();
 
@@ -68,6 +70,20 @@ public class GameDAOJpaImpl implements GameDAO {
             countJpql += " AND gen.label IN :genres";
             selectJpql += " AND gen.label IN :genres";
             params.put("genres", genres);
+        }
+
+        // Publisher filter
+        if (publisher != null) {
+            countJpql += " AND g.publisher.name = :publisher";
+            selectJpql += " AND g.publisher.name = :publisher";
+            params.put("publisher", publisher);
+        }
+
+        // Platform filter
+        if (platforms != null && !platforms.isEmpty()) {
+            countJpql += " AND plat.name IN :platforms";
+            selectJpql += " AND plat.name IN :platforms";
+            params.put("platforms", platforms);
         }
 
         // Order by newest first (createdAt descending)

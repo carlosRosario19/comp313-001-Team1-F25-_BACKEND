@@ -153,8 +153,17 @@ public class GameServiceImpl implements GameService {
         else if(searchGameDTO.size() > MAX_PAGE_SIZE) throw new Exceptions.PageOutOfRangeException("Page size cannot exceed " + MAX_PAGE_SIZE);
 
         Pageable pageable = PageRequest.of(searchGameDTO.page(), searchGameDTO.size());
+        Set<GenreType> genreTypes = parseGenreTypes(searchGameDTO.genres());
+        Set<PlatformType> platformTypes = parsePlatformTypes(searchGameDTO.platforms());
+        PublisherType publisherType = parsePublisherType(searchGameDTO.publisher());
 
-        Page<Game> gamePage = gameDAO.findAllOrderByPostedAtDesc(searchGameDTO.title(), searchGameDTO.genres(), pageable);
+        Page<Game> gamePage = gameDAO.findAllOrderByPostedAtDesc(
+                searchGameDTO.title(),
+                genreTypes,
+                publisherType,
+                platformTypes,
+                pageable
+        );
 
         return gamePage.map(mapper.gameToGameDTO);
     }
@@ -173,5 +182,63 @@ public class GameServiceImpl implements GameService {
                 .map(String::toUpperCase)
                 .map(PlatformType::fromValue)
                 .collect(Collectors.toSet());
+    }
+
+    private Set<GenreType> parseGenreTypes(Set<String> genreStrings) {
+        if (genreStrings == null || genreStrings.isEmpty()) return Collections.emptySet();
+
+        return genreStrings.stream()
+                .map(this::safeParseGenre)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
+    private Set<PlatformType> parsePlatformTypes(Set<String> platformStrings) {
+        if (platformStrings == null || platformStrings.isEmpty()) return Collections.emptySet();
+
+        return platformStrings.stream()
+                .map(this::safeParsePlatform)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
+    private PublisherType parsePublisherType(String publisher) {
+        if (publisher == null || publisher.isBlank()) return null;
+
+        try {
+            // Try as enum name
+            return PublisherType.valueOf(publisher.toUpperCase());
+        } catch (IllegalArgumentException e1) {
+            try {
+                // Try as display value (the "val" field)
+                return PublisherType.fromValue(publisher);
+            } catch (IllegalArgumentException e2) {
+                throw new IllegalArgumentException("Unknown publisher: " + publisher);
+            }
+        }
+    }
+
+    private GenreType safeParseGenre(String value) {
+        try {
+            return GenreType.valueOf(value.toUpperCase());
+        } catch (IllegalArgumentException e1) {
+            try {
+                return GenreType.fromValue(value);
+            } catch (IllegalArgumentException e2) {
+                return null; // Ignore unknown genre
+            }
+        }
+    }
+
+    private PlatformType safeParsePlatform(String value) {
+        try {
+            return PlatformType.valueOf(value.toUpperCase());
+        } catch (IllegalArgumentException e1) {
+            try {
+                return PlatformType.fromValue(value);
+            } catch (IllegalArgumentException e2) {
+                return null; // Ignore unknown platform
+            }
+        }
     }
 }

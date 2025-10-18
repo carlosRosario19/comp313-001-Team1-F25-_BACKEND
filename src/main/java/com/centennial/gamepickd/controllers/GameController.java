@@ -5,7 +5,6 @@ import com.centennial.gamepickd.dtos.GameDTO;
 import com.centennial.gamepickd.dtos.SearchGameDTO;
 import com.centennial.gamepickd.services.contracts.GameService;
 import com.centennial.gamepickd.util.Exceptions;
-import com.centennial.gamepickd.util.enums.GenreType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
@@ -55,10 +54,12 @@ public class GameController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
             @RequestParam(required = false) String title,
-            @RequestParam(required = false) Set<GenreType> genres,
+            @RequestParam(required = false) Set<String> genres,
+            @RequestParam(required = false) String publisher,
+            @RequestParam(required = false) Set<String> platforms,
             PagedResourcesAssembler<GameDTO> assembler
     ) throws Exceptions.PageOutOfRangeException {
-        SearchGameDTO searchGameDTO = new SearchGameDTO(page, size, title, genres);
+        SearchGameDTO searchGameDTO = new SearchGameDTO(page, size, title, genres, publisher, platforms);
         Page<GameDTO> gamesPage = gameService.getAll(searchGameDTO);
         return assembler.toModel(gamesPage, EntityModel::of);
     }

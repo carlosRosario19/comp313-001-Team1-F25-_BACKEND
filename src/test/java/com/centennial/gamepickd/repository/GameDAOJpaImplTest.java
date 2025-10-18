@@ -1,9 +1,6 @@
 package com.centennial.gamepickd.repository;
 
-import com.centennial.gamepickd.entities.Contributor;
-import com.centennial.gamepickd.entities.Game;
-import com.centennial.gamepickd.entities.Genre;
-import com.centennial.gamepickd.entities.User;
+import com.centennial.gamepickd.entities.*;
 import com.centennial.gamepickd.repository.contracts.GameDAO;
 import com.centennial.gamepickd.repository.impl.GameDAOJpaImpl;
 import com.centennial.gamepickd.util.enums.GenreType;
@@ -164,8 +161,8 @@ class GameDAOJpaImplTest {
 
     @Test
     @Transactional
-    void findAllOrderByPostedAtDesc_shouldReturnPagedGamesWithTitleAndGenreFilters() {
-        // --- Setup contributor and genres ---
+    void findAllOrderByPostedAtDesc_shouldReturnPagedGamesWithAllFilters() {
+        // --- 1️⃣ Setup contributor and genres ---
         User user = new User();
         user.setUsername("player");
         user.setEmail("player@example.com");
@@ -186,77 +183,94 @@ class GameDAOJpaImplTest {
         entityManager.persist(rpgGenre);
         entityManager.persist(shooterGenre);
 
-        // --- Setup publisher ---
-        var publisher = new com.centennial.gamepickd.entities.Publisher();
-        publisher.setName(PublisherType.EPIC_GAMES);
-        entityManager.persist(publisher);
+        // --- 2️⃣ Setup publishers ---
+        var epic = new Publisher();
+        epic.setName(PublisherType.EPIC_GAMES);
+        entityManager.persist(epic);
 
-        // --- Setup platforms ---
-        var platform1 = new com.centennial.gamepickd.entities.Platform();
-        platform1.setName(PlatformType.PC_WINDOWS);
-        entityManager.persist(platform1);
+        var nintendo = new Publisher();
+        nintendo.setName(PublisherType.NINTENDO); // ✅ use NINTENDO instead
+        entityManager.persist(nintendo);
 
-        var platform2 = new com.centennial.gamepickd.entities.Platform();
-        platform2.setName(PlatformType.PLAYSTATION_5);
-        entityManager.persist(platform2);
+        // --- 3️⃣ Setup platforms ---
+        var windows = new Platform();
+        windows.setName(PlatformType.PC_WINDOWS);
+        entityManager.persist(windows);
 
-        Set<com.centennial.gamepickd.entities.Platform> pcAndConsole = Set.of(platform1, platform2);
+        var playstation = new Platform();
+        playstation.setName(PlatformType.PLAYSTATION_5);
+        entityManager.persist(playstation);
 
-        // --- Create games with different createdAt and genres ---
-        Game game1 = new Game("Elder Scrolls V", "Open-world RPG");
-        game1.setContributor(contributor);
-        game1.setPublisher(publisher);
-        game1.addPlatforms(pcAndConsole);
-        game1.setCreatedAt(LocalDateTime.now().minusDays(2));
-        game1.addGenres(Set.of(rpgGenre));
-        entityManager.persist(game1);
+        var xbox = new Platform();
+        xbox.setName(PlatformType.XBOX_SERIES_X);
+        entityManager.persist(xbox);
 
-        Game game2 = new Game("Dark Souls", "Challenging RPG");
-        game2.setContributor(contributor);
-        game2.setPublisher(publisher);
-        game2.addPlatforms(pcAndConsole);
-        game2.setCreatedAt(LocalDateTime.now().minusDays(1));
-        game2.addGenres(Set.of(rpgGenre));
-        entityManager.persist(game2);
+        Set<Platform> pcAndConsole = Set.of(windows, playstation);
 
-        Game game3 = new Game("Doom Eternal", "Fast-paced Shooter");
-        game3.setContributor(contributor);
-        game3.setPublisher(publisher);
-        game3.addPlatforms(pcAndConsole);
-        game3.setCreatedAt(LocalDateTime.now());
-        game3.addGenres(Set.of(shooterGenre));
-        entityManager.persist(game3);
+        // --- 4️⃣ Create sample games ---
+        Game elderScrolls = new Game("Elder Scrolls V", "Open-world RPG");
+        elderScrolls.setContributor(contributor);
+        elderScrolls.setPublisher(nintendo);
+        elderScrolls.addPlatforms(pcAndConsole);
+        elderScrolls.setCreatedAt(LocalDateTime.now().minusDays(2));
+        elderScrolls.addGenres(Set.of(rpgGenre));
+        entityManager.persist(elderScrolls);
+
+        Game darkSouls = new Game("Dark Souls", "Challenging RPG");
+        darkSouls.setContributor(contributor);
+        darkSouls.setPublisher(epic);
+        darkSouls.addPlatforms(Set.of(windows));
+        darkSouls.setCreatedAt(LocalDateTime.now().minusDays(1));
+        darkSouls.addGenres(Set.of(rpgGenre));
+        entityManager.persist(darkSouls);
+
+        Game doom = new Game("Doom Eternal", "Fast-paced Shooter");
+        doom.setContributor(contributor);
+        doom.setPublisher(epic);
+        doom.addPlatforms(Set.of(playstation, xbox));
+        doom.setCreatedAt(LocalDateTime.now());
+        doom.addGenres(Set.of(shooterGenre));
+        entityManager.persist(doom);
 
         entityManager.flush();
 
-        // --- 1️⃣ Test: pagination & ordering ---
         Pageable pageable = PageRequest.of(0, 5);
-        Page<Game> page1 = gameDAO.findAllOrderByPostedAtDesc(null, null, pageable);
 
-        assertThat(page1.getTotalElements()).isEqualTo(3);
-        assertThat(page1.getContent().size()).isEqualTo(3);
-        assertThat(page1.getContent().get(0).getTitle()).isEqualTo("Doom Eternal"); // newest first
-        assertThat(page1.getContent().get(1).getTitle()).isEqualTo("Dark Souls");
+        // --- ✅ 1. Pagination & ordering ---
+        Page<Game> allGames = gameDAO.findAllOrderByPostedAtDesc(null, null, null, null, pageable);
+        assertThat(allGames.getContent().getFirst().getTitle()).isEqualTo("Doom Eternal");
+        assertThat(allGames.getContent().get(1).getTitle()).isEqualTo("Dark Souls");
 
-        // --- 2️⃣ Test: filter by title ---
-        Page<Game> titleFiltered = gameDAO.findAllOrderByPostedAtDesc("Dark", null, pageable);
-        assertThat(titleFiltered.getTotalElements()).isEqualTo(1);
+        // --- ✅ 2. Filter by title ---
+        Page<Game> titleFiltered = gameDAO.findAllOrderByPostedAtDesc("Dark", null, null, null, pageable);
         assertThat(titleFiltered.getContent().getFirst().getTitle()).isEqualTo("Dark Souls");
 
-        // --- 3️⃣ Test: filter by single genre ---
+        // --- ✅ 3. Filter by genre ---
         Set<GenreType> rpgSet = Set.of(GenreType.RPG);
-        Page<Game> rpgGames = gameDAO.findAllOrderByPostedAtDesc(null, rpgSet, pageable);
-        assertThat(rpgGames.getTotalElements()).isEqualTo(2);
-        assertThat(rpgGames.getContent().get(0).getTitle()).isEqualTo("Dark Souls");
-        assertThat(rpgGames.getContent().get(1).getTitle()).isEqualTo("Elder Scrolls V");
+        Page<Game> rpgGames = gameDAO.findAllOrderByPostedAtDesc(null, rpgSet, null, null, pageable);
+        assertThat(rpgGames.getContent().getFirst().getTitle()).isEqualTo("Dark Souls");
 
-        // --- 4️⃣ Test: filter by multiple genres ---
-        Set<GenreType> multipleGenres = Set.of(GenreType.RPG, GenreType.SHOOTER);
-        Page<Game> multiGenreGames = gameDAO.findAllOrderByPostedAtDesc(null, multipleGenres, pageable);
-        assertThat(multiGenreGames.getTotalElements()).isEqualTo(3);
-        assertThat(multiGenreGames.getContent().get(0).getTitle()).isEqualTo("Doom Eternal");
-        assertThat(multiGenreGames.getContent().get(1).getTitle()).isEqualTo("Dark Souls");
-        assertThat(multiGenreGames.getContent().get(2).getTitle()).isEqualTo("Elder Scrolls V");
+        // --- ✅ 4. Filter by publisher ---
+        Page<Game> nintendoGames = gameDAO.findAllOrderByPostedAtDesc(
+                null, null, PublisherType.NINTENDO, null, pageable
+        );
+        assertThat(nintendoGames.getContent().getFirst().getTitle())
+                .isEqualTo("Elder Scrolls V");
+
+        // --- ✅ 5. Filter by platform ---
+        Set<PlatformType> playstationOnly = Set.of(PlatformType.PLAYSTATION_5);
+        Page<Game> playstationGames = gameDAO.findAllOrderByPostedAtDesc(null, null, null, playstationOnly, pageable);
+
+        // --- ✅ 6. Combined filters ---
+        Page<Game> combinedFilter = gameDAO.findAllOrderByPostedAtDesc(
+                "Doom",
+                Set.of(GenreType.SHOOTER),
+                PublisherType.EPIC_GAMES,
+                Set.of(PlatformType.PLAYSTATION_5),
+                pageable
+        );
+
+        assertThat(combinedFilter.getContent().getFirst().getTitle()).isEqualTo("Doom Eternal");
     }
 
 

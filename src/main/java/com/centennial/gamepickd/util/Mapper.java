@@ -6,6 +6,8 @@ import com.centennial.gamepickd.dtos.AddMemberDTO;
 import com.centennial.gamepickd.dtos.GameDTO;
 import com.centennial.gamepickd.entities.*;
 import com.centennial.gamepickd.util.enums.GenreType;
+import com.centennial.gamepickd.util.enums.PlatformType;
+import com.centennial.gamepickd.util.enums.PublisherType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -70,12 +72,24 @@ public class Mapper {
                 .map(Genre::getLabel)
                 .collect(Collectors.toSet());
 
+        Set<PlatformType> platforms = Optional.ofNullable(game.getPlatforms())
+                .orElse(List.of())
+                .stream()
+                .map(Platform::getName)
+                .collect(Collectors.toSet());
+
+        PublisherType publisherName = Optional.ofNullable(game.getPublisher())
+                .map(Publisher::getName)
+                .orElse(null);
+
         return new GameDTO(
                 game.getId(),
                 game.getTitle(),
                 game.getDescription(),
                 game.getCoverImagePath(),
                 genres,
+                publisherName,
+                platforms,
                 game.getCreatedAt()
         );
     };
