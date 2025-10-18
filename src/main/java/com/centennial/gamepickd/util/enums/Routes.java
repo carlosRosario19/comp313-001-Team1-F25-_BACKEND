@@ -6,7 +6,8 @@ public enum Routes {
     MEMBERS("/api/members"),
     CONTRIBUTORS("/api/contributors"),
     GAMES("/api/games"),
-    IMAGES("/api/images/**");
+    IMAGES("/api/images/**"),
+    GENRES("/api/genres");
 
     private final String path;
 
