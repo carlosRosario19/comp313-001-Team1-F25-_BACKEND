@@ -8,6 +8,13 @@ import org.springframework.data.domain.Page;
 
 public interface GameService {
 
-    void add(AddGameDTO addGameDTO) throws Exceptions.GameAlreadyExistsException, Exceptions.StorageException, Exceptions.ContributorNotFoundException;
+    void add(AddGameDTO addGameDTO) throws
+            Exceptions.GameAlreadyExistsException,
+            Exceptions.StorageException,
+            Exceptions.ContributorNotFoundException,
+            Exceptions.PublisherNotFoundException,
+            Exceptions.PlatformNotFoundException,
+            Exceptions.GenreNotFoundException;
+
     Page<GameDTO> getAll(SearchGameDTO searchGameDTO) throws Exceptions.PageOutOfRangeException;
 }

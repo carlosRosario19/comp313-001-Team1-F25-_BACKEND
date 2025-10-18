@@ -61,6 +61,8 @@ class GameControllerTest {
                 "test game title",
                 "test game description",
                 "RPG,MMORPG",
+                "UBISOFT",
+                "PlayStation 5,PC (Windows)",
                 "contributor",
                 coverImage
         );
@@ -75,6 +77,8 @@ class GameControllerTest {
                         .param("title", validGameDTO.title())
                         .param("description", validGameDTO.description())
                         .param("genres", validGameDTO.genres())
+                        .param("publisher", validGameDTO.publisher())
+                        .param("platforms", validGameDTO.platforms())
                         .param("contributorUsername", validGameDTO.contributorUsername())
         ).andExpect(status().isOk());
 
@@ -93,6 +97,8 @@ class GameControllerTest {
                         .param("title", validGameDTO.title())
                         .param("description", validGameDTO.description())
                         .param("genres", validGameDTO.genres())
+                        .param("publisher", validGameDTO.publisher())
+                        .param("platforms", validGameDTO.platforms())
                         .param("contributorUsername", validGameDTO.contributorUsername())
         ).andExpect(status().isConflict()); // 409 if you map that exception
     }
@@ -109,6 +115,8 @@ class GameControllerTest {
                         .param("title", validGameDTO.title())
                         .param("description", validGameDTO.description())
                         .param("genres", validGameDTO.genres())
+                        .param("publisher", validGameDTO.publisher())
+                        .param("platforms", validGameDTO.platforms())
                         .param("contributorUsername", validGameDTO.contributorUsername())
         ).andExpect(status().isNotFound());
     }
@@ -125,8 +133,46 @@ class GameControllerTest {
                         .param("title", validGameDTO.title())
                         .param("description", validGameDTO.description())
                         .param("genres", validGameDTO.genres())
+                        .param("publisher", validGameDTO.publisher())
+                        .param("platforms", validGameDTO.platforms())
                         .param("contributorUsername", validGameDTO.contributorUsername())
         ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "contributor", roles = {"CONTRIBUTOR"})
+    void saveGame_shouldReturnNotFound_whenPublisherDoesNotExist() throws Exception {
+        doThrow(new Exceptions.PublisherNotFoundException("Publisher not found"))
+                .when(gameService).add(any(AddGameDTO.class));
+
+        mockMvc.perform(
+                multipart("/api/games")
+                        .file(coverImage)
+                        .param("title", validGameDTO.title())
+                        .param("description", validGameDTO.description())
+                        .param("genres", validGameDTO.genres())
+                        .param("publisher", validGameDTO.publisher())
+                        .param("platforms", validGameDTO.platforms())
+                        .param("contributorUsername", validGameDTO.contributorUsername())
+        ).andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "contributor", roles = {"CONTRIBUTOR"})
+    void saveGame_shouldReturnNotFound_whenPlatformDoesNotExist() throws Exception {
+        doThrow(new Exceptions.PlatformNotFoundException("Platform not found"))
+                .when(gameService).add(any(AddGameDTO.class));
+
+        mockMvc.perform(
+                multipart("/api/games")
+                        .file(coverImage)
+                        .param("title", validGameDTO.title())
+                        .param("description", validGameDTO.description())
+                        .param("genres", validGameDTO.genres())
+                        .param("publisher", validGameDTO.publisher())
+                        .param("platforms", validGameDTO.platforms())
+                        .param("contributorUsername", validGameDTO.contributorUsername())
+        ).andExpect(status().isNotFound());
     }
 
     @Test
@@ -169,7 +215,7 @@ class GameControllerTest {
         // Arrange
         GameDTO filteredGame = new GameDTO(
                 2L,
-                "Zelda Adventure",
+                "Zelda Adventure 5",
                 "A fantasy RPG",
                 "zelda.png",
                 Set.of(GenreType.RPG, GenreType.MMORPG),
@@ -183,7 +229,7 @@ class GameControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/games")
                         .param("title", "Zelda"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.gameDTOList[0].title").value("Zelda Adventure"))
+                .andExpect(jsonPath("$._embedded.gameDTOList[0].title").value("Zelda Adventure 5"))
                 .andExpect(jsonPath("$._embedded.gameDTOList[0].genres[0]").value("RPG"));
     }
 

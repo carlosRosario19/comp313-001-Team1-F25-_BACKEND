@@ -1,7 +1,5 @@
 package com.centennial.gamepickd.util;
 
-import java.io.IOException;
-
 public class Exceptions {
     public static class EmailAlreadyExistsException extends Exception {
         public EmailAlreadyExistsException(String message) {
@@ -48,4 +46,17 @@ public class Exceptions {
             super(message);
         }
     }
+
+    public static class PublisherNotFoundException extends Exception {
+        public PublisherNotFoundException(String message) { super(message);}
+    }
+
+    public static class PlatformNotFoundException extends Exception {
+        public PlatformNotFoundException(String message) { super(message);}
+    }
+
+    public static class GenreNotFoundException extends Exception {
+        public GenreNotFoundException(String message) { super(message);}
+    }
+
 }

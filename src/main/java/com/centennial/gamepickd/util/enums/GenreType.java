@@ -19,7 +19,7 @@ public enum GenreType {
         return val;
     }
 
-    public static GenreType fromLabel(String label) {
+    public static GenreType fromValue(String label) {
         for (GenreType genre : values()) {
             if (genre.val.equalsIgnoreCase(label)) {
                 return genre;

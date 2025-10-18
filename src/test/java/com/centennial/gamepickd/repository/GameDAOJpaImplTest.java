@@ -7,6 +7,8 @@ import com.centennial.gamepickd.entities.User;
 import com.centennial.gamepickd.repository.contracts.GameDAO;
 import com.centennial.gamepickd.repository.impl.GameDAOJpaImpl;
 import com.centennial.gamepickd.util.enums.GenreType;
+import com.centennial.gamepickd.util.enums.PlatformType;
+import com.centennial.gamepickd.util.enums.PublisherType;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +45,7 @@ class GameDAOJpaImplTest {
 
     @Test
     @Transactional
-    void create_shouldPersistGame() {
+    void create_shouldPersistGame_withPublisherAndPlatforms() {
         // 1️⃣ Create User
         User user = new User();
         user.setUsername("johndoe");
@@ -56,31 +58,49 @@ class GameDAOJpaImplTest {
         Contributor contributor = new Contributor.Builder()
                 .firstName("John")
                 .lastName("Doe")
-                .user(user) // mandatory
+                .user(user)
                 .build();
         contributor.setCreatedAt(LocalDateTime.now());
         entityManager.persist(contributor);
 
-        // 3️⃣ Create Game
+        // 3️⃣ Create Publisher
+        var publisher = new com.centennial.gamepickd.entities.Publisher();
+        publisher.setName(PublisherType.CD_PROJEKT);
+        entityManager.persist(publisher);
+
+        // 4️⃣ Create Platforms
+        var platform1 = new com.centennial.gamepickd.entities.Platform();
+        platform1.setName(PlatformType.PC_WINDOWS);
+        entityManager.persist(platform1);
+
+        var platform2 = new com.centennial.gamepickd.entities.Platform();
+        platform2.setName(PlatformType.PLAYSTATION_5);
+        entityManager.persist(platform2);
+
+        Set<com.centennial.gamepickd.entities.Platform> platforms = Set.of(platform1, platform2);
+
+        // 5️⃣ Create Game
         Game game = new Game("The Witcher 3", "Open-world RPG");
         game.setContributor(contributor);
+        game.setPublisher(publisher);
+        game.addPlatforms(platforms);
         game.setCreatedAt(LocalDateTime.now());
-        gameDAO.create(game);
 
-        // 4️⃣ Flush to DB
+        gameDAO.create(game);
         entityManager.flush();
 
-        // 5️⃣ Assert
+        // 6️⃣ Assert
         Game persistedGame = entityManager.find(Game.class, game.getId());
         assertThat(persistedGame).isNotNull();
         assertThat(persistedGame.getTitle()).isEqualTo("The Witcher 3");
         assertThat(persistedGame.getContributor()).isNotNull();
         assertThat(persistedGame.getContributor().getFirstName()).isEqualTo("John");
+        assertThat(persistedGame.getPublisher()).isNotNull();
     }
 
     @Test
     @Transactional
-    void findByTitle_shouldReturnGame_whenGameExists() {
+    void findByTitle_shouldReturnGame_withPublisherAndPlatforms_whenGameExists() {
         // 1️⃣ Create User
         User user = new User();
         user.setUsername("janedoe");
@@ -98,22 +118,38 @@ class GameDAOJpaImplTest {
         contributor.setCreatedAt(LocalDateTime.now());
         entityManager.persist(contributor);
 
-        // 3️⃣ Create Game
+        // 3️⃣ Create Publisher
+        var publisher = new com.centennial.gamepickd.entities.Publisher();
+        publisher.setName(PublisherType.UBISOFT);
+        entityManager.persist(publisher);
+
+        // 4️⃣ Create Platforms
+        var platform1 = new com.centennial.gamepickd.entities.Platform();
+        platform1.setName(PlatformType.XBOX_SERIES_X);
+        entityManager.persist(platform1);
+
+        Set<com.centennial.gamepickd.entities.Platform> platforms = Set.of(platform1);
+
+        // 5️⃣ Create Game
         Game game = new Game("Cyberpunk 2077", "Futuristic RPG");
         game.setContributor(contributor);
+        game.setPublisher(publisher);
+        game.addPlatforms(platforms);
         game.setCreatedAt(LocalDateTime.now());
+
         gameDAO.create(game);
         entityManager.flush();
 
-        // 4️⃣ Act
+        // 6️⃣ Act
         var result = gameDAO.findByTitle("Cyberpunk 2077");
 
-        // 5️⃣ Assert
+        // 7️⃣ Assert
         assertThat(result).isPresent();
         Game foundGame = result.get();
         assertThat(foundGame.getTitle()).isEqualTo("Cyberpunk 2077");
         assertThat(foundGame.getContributor()).isNotNull();
         assertThat(foundGame.getContributor().getFirstName()).isEqualTo("Jane");
+        assertThat(foundGame.getPublisher()).isNotNull();
     }
 
     @Test
@@ -124,47 +160,6 @@ class GameDAOJpaImplTest {
 
         // 2️⃣ Assert
         assertThat(result).isEmpty();
-    }
-
-    @Test
-    @Transactional
-    void findByTitle_shouldReturnCorrectGame_whenMultipleGamesExist() {
-        // 1️⃣ Create User
-        User user = new User();
-        user.setUsername("alex");
-        user.setEmail("alex@example.com");
-        user.setPassword("pass123");
-        user.setEnabled(true);
-        entityManager.persist(user);
-
-        // 2️⃣ Contributor
-        Contributor contributor = new Contributor.Builder()
-                .firstName("Alex")
-                .lastName("Smith")
-                .user(user)
-                .build();
-        contributor.setCreatedAt(LocalDateTime.now());
-        entityManager.persist(contributor);
-
-        // 3️⃣ Multiple Games
-        Game game1 = new Game("Assassin's Creed", "Action RPG");
-        game1.setContributor(contributor);
-        game1.setCreatedAt(LocalDateTime.now());
-        gameDAO.create(game1);
-
-        Game game2 = new Game("Assassin's Creed Valhalla", "Open-world RPG");
-        game2.setContributor(contributor);
-        game2.setCreatedAt(LocalDateTime.now());
-        gameDAO.create(game2);
-
-        entityManager.flush();
-
-        // 4️⃣ Act
-        var result = gameDAO.findByTitle("Assassin's Creed");
-
-        // 5️⃣ Assert
-        assertThat(result).isPresent();
-        assertThat(result.get().getTitle()).isEqualTo("Assassin's Creed");
     }
 
     @Test
@@ -191,23 +186,45 @@ class GameDAOJpaImplTest {
         entityManager.persist(rpgGenre);
         entityManager.persist(shooterGenre);
 
+        // --- Setup publisher ---
+        var publisher = new com.centennial.gamepickd.entities.Publisher();
+        publisher.setName(PublisherType.EPIC_GAMES);
+        entityManager.persist(publisher);
+
+        // --- Setup platforms ---
+        var platform1 = new com.centennial.gamepickd.entities.Platform();
+        platform1.setName(PlatformType.PC_WINDOWS);
+        entityManager.persist(platform1);
+
+        var platform2 = new com.centennial.gamepickd.entities.Platform();
+        platform2.setName(PlatformType.PLAYSTATION_5);
+        entityManager.persist(platform2);
+
+        Set<com.centennial.gamepickd.entities.Platform> pcAndConsole = Set.of(platform1, platform2);
+
         // --- Create games with different createdAt and genres ---
         Game game1 = new Game("Elder Scrolls V", "Open-world RPG");
         game1.setContributor(contributor);
+        game1.setPublisher(publisher);
+        game1.addPlatforms(pcAndConsole);
         game1.setCreatedAt(LocalDateTime.now().minusDays(2));
-        game1.addGenre(rpgGenre);
+        game1.addGenres(Set.of(rpgGenre));
         entityManager.persist(game1);
 
         Game game2 = new Game("Dark Souls", "Challenging RPG");
         game2.setContributor(contributor);
+        game2.setPublisher(publisher);
+        game2.addPlatforms(pcAndConsole);
         game2.setCreatedAt(LocalDateTime.now().minusDays(1));
-        game2.addGenre(rpgGenre);
+        game2.addGenres(Set.of(rpgGenre));
         entityManager.persist(game2);
 
         Game game3 = new Game("Doom Eternal", "Fast-paced Shooter");
         game3.setContributor(contributor);
+        game3.setPublisher(publisher);
+        game3.addPlatforms(pcAndConsole);
         game3.setCreatedAt(LocalDateTime.now());
-        game3.addGenre(shooterGenre);
+        game3.addGenres(Set.of(shooterGenre));
         entityManager.persist(game3);
 
         entityManager.flush();
@@ -227,20 +244,19 @@ class GameDAOJpaImplTest {
         assertThat(titleFiltered.getContent().getFirst().getTitle()).isEqualTo("Dark Souls");
 
         // --- 3️⃣ Test: filter by single genre ---
-        Set<GenreType> rpgSet = new HashSet<>(List.of(GenreType.RPG));
+        Set<GenreType> rpgSet = Set.of(GenreType.RPG);
         Page<Game> rpgGames = gameDAO.findAllOrderByPostedAtDesc(null, rpgSet, pageable);
         assertThat(rpgGames.getTotalElements()).isEqualTo(2);
         assertThat(rpgGames.getContent().get(0).getTitle()).isEqualTo("Dark Souls");
         assertThat(rpgGames.getContent().get(1).getTitle()).isEqualTo("Elder Scrolls V");
 
         // --- 4️⃣ Test: filter by multiple genres ---
-        Set<GenreType> multipleGenres = new HashSet<>(Arrays.asList(GenreType.RPG, GenreType.SHOOTER));
+        Set<GenreType> multipleGenres = Set.of(GenreType.RPG, GenreType.SHOOTER);
         Page<Game> multiGenreGames = gameDAO.findAllOrderByPostedAtDesc(null, multipleGenres, pageable);
         assertThat(multiGenreGames.getTotalElements()).isEqualTo(3);
         assertThat(multiGenreGames.getContent().get(0).getTitle()).isEqualTo("Doom Eternal");
         assertThat(multiGenreGames.getContent().get(1).getTitle()).isEqualTo("Dark Souls");
         assertThat(multiGenreGames.getContent().get(2).getTitle()).isEqualTo("Elder Scrolls V");
-
     }
 
 

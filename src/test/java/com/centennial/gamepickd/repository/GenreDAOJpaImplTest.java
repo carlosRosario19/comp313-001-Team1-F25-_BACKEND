@@ -33,25 +33,28 @@ public class GenreDAOJpaImplTest {
 
     @Test
     @Transactional
-    void findByLabel_shouldReturnGenre_whenGenreExists() {
+    void findByLabels_shouldReturnGenres_whenGenresExist() {
         // Arrange
-        Genre genre = new Genre(GenreType.RPG);
-        entityManager.persist(genre);
+        Genre genre1 = new Genre(GenreType.RPG);
+        Genre genre2 = new Genre(GenreType.SHOOTER);
+        entityManager.persist(genre1);
+        entityManager.persist(genre2);
         entityManager.flush();
 
         // Act
-        Optional<Genre> result = genreDAO.findByLabel(GenreType.RPG);
+        Set<Genre> result = genreDAO.findByLabels(Set.of(GenreType.RPG, GenreType.SHOOTER));
 
         // Assert
-        assertThat(result).isPresent();
-        assertThat(result.get().getLabel()).isEqualTo(GenreType.RPG);
+        assertThat(result).hasSize(2);
+        assertThat(result.stream().map(Genre::getLabel))
+                .containsExactlyInAnyOrder(GenreType.RPG, GenreType.SHOOTER);
     }
 
     @Test
     @Transactional
-    void findByLabel_shouldReturnEmpty_whenGenreDoesNotExist() {
+    void findByLabels_shouldReturnEmptySet_whenGenresDoNotExist() {
         // Act
-        Optional<Genre> result = genreDAO.findByLabel(GenreType.MMORPG);
+        Set<Genre> result = genreDAO.findByLabels(Set.of(GenreType.MMORPG));
 
         // Assert
         assertThat(result).isEmpty();
@@ -64,7 +67,6 @@ public class GenreDAOJpaImplTest {
         Genre genre1 = new Genre(GenreType.INDIE);
         Genre genre2 = new Genre(GenreType.SHOOTER);
         Genre genre3 = new Genre(GenreType.RPG);
-
         entityManager.persist(genre1);
         entityManager.persist(genre2);
         entityManager.persist(genre3);

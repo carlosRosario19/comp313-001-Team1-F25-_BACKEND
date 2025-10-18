@@ -7,9 +7,7 @@ import com.centennial.gamepickd.entities.Contributor;
 import com.centennial.gamepickd.entities.Game;
 import com.centennial.gamepickd.entities.Genre;
 import com.centennial.gamepickd.entities.User;
-import com.centennial.gamepickd.repository.contracts.ContributorDAO;
-import com.centennial.gamepickd.repository.contracts.GameDAO;
-import com.centennial.gamepickd.repository.contracts.GenreDAO;
+import com.centennial.gamepickd.repository.contracts.*;
 import com.centennial.gamepickd.services.contracts.StorageService;
 import com.centennial.gamepickd.services.impl.GameServiceImpl;
 import com.centennial.gamepickd.util.Exceptions;
@@ -45,22 +43,26 @@ class GameServiceTest {
     private GenreDAO genreDAO;
 
     @Mock
+    private PublisherDAO publisherDAO;
+
+    @Mock
+    private PlatformDAO platformDAO;
+
+    @Mock
     private StorageService storageService;
 
     @InjectMocks
     private GameServiceImpl gameService;
 
     private AddGameDTO validGameDTO;
-
     private MockMultipartFile coverImage;
-
     private Contributor mockContributor;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         Mapper mapper = new Mapper();
-        gameService = new GameServiceImpl(gameDAO, genreDAO, contributorDAO, storageService, mapper);
+        gameService = new GameServiceImpl(gameDAO, genreDAO, contributorDAO, publisherDAO, platformDAO, storageService, mapper);
 
         coverImage = new MockMultipartFile(
                 "coverImage",
@@ -73,6 +75,8 @@ class GameServiceTest {
                 "test game title",
                 "test game description",
                 "RPG,MMORPG",
+                "UBISOFT",
+                "PlayStation 5,PC (Windows)",
                 "contributor",
                 coverImage
         );
@@ -114,14 +118,18 @@ class GameServiceTest {
                 "new game",
                 "desc",
                 "INVALIDGENRE",
+                "UBISOFT",
+                "PlayStation 5",
                 "contributor",
                 coverImage
         );
 
         when(gameDAO.findByTitle(dto.title())).thenReturn(Optional.empty());
         when(contributorDAO.findByUsername(dto.contributorUsername())).thenReturn(Optional.of(mockContributor));
+        when(publisherDAO.findByLabel(any())).thenReturn(Optional.of(mock(com.centennial.gamepickd.entities.Publisher.class)));
+        when(platformDAO.findByLabels(any())).thenReturn(Set.of(mock(com.centennial.gamepickd.entities.Platform.class)));
 
-        assertThrows(IllegalArgumentException.class, () -> gameService.add(dto));
+        assertThrows(Exceptions.GenreNotFoundException.class, () -> gameService.add(dto));
 
         verify(contributorDAO).findByUsername(dto.contributorUsername());
         verifyNoInteractions(storageService);
@@ -132,7 +140,11 @@ class GameServiceTest {
     void add_shouldThrowStorageException_whenUploadFails() throws Exception {
         when(gameDAO.findByTitle(validGameDTO.title())).thenReturn(Optional.empty());
         when(contributorDAO.findByUsername(validGameDTO.contributorUsername())).thenReturn(Optional.of(mockContributor));
-        when(genreDAO.findByLabel(any())).thenReturn(Optional.of(new Genre()));
+        when(publisherDAO.findByLabel(any())).thenReturn(Optional.of(mock(com.centennial.gamepickd.entities.Publisher.class)));
+        when(platformDAO.findByLabels(any())).thenReturn(Set.of(mock(com.centennial.gamepickd.entities.Platform.class)));
+        when(genreDAO.findByLabels(any())).thenReturn(
+                Set.of(new Genre())  // or multiple Genre mocks if needed
+        );
 
         doThrow(new RuntimeException("S3 down")).when(storageService).store(any());
 
@@ -151,7 +163,11 @@ class GameServiceTest {
     void add_shouldCreateGameSuccessfully_whenValidData() throws Exception {
         when(gameDAO.findByTitle(validGameDTO.title())).thenReturn(Optional.empty());
         when(contributorDAO.findByUsername(validGameDTO.contributorUsername())).thenReturn(Optional.of(mockContributor));
-        when(genreDAO.findByLabel(any())).thenReturn(Optional.of(new Genre()));
+        when(publisherDAO.findByLabel(any())).thenReturn(Optional.of(mock(com.centennial.gamepickd.entities.Publisher.class)));
+        when(platformDAO.findByLabels(any())).thenReturn(Set.of(mock(com.centennial.gamepickd.entities.Platform.class)));
+        when(genreDAO.findByLabels(any())).thenReturn(
+                Set.of(new Genre())  // or multiple Genre mocks if needed
+        );
 
         gameService.add(validGameDTO);
 
@@ -166,18 +182,53 @@ class GameServiceTest {
                 "new title",
                 "desc",
                 "RPG",
+                "UBISOFT",                       // Publisher
+                "PlayStation 5",                 // Platform
                 "contributor",
                 null
         );
 
         when(gameDAO.findByTitle(dtoWithoutImage.title())).thenReturn(Optional.empty());
         when(contributorDAO.findByUsername(dtoWithoutImage.contributorUsername())).thenReturn(Optional.of(mockContributor));
-        when(genreDAO.findByLabel(any())).thenReturn(Optional.of(new Genre()));
+        when(publisherDAO.findByLabel(any())).thenReturn(Optional.of(mock(com.centennial.gamepickd.entities.Publisher.class)));
+        when(platformDAO.findByLabels(any())).thenReturn(Set.of(mock(com.centennial.gamepickd.entities.Platform.class)));
+        when(genreDAO.findByLabels(any())).thenReturn(
+                Set.of(new Genre())  // or multiple Genre mocks if needed
+        );
 
         gameService.add(dtoWithoutImage);
 
         verify(storageService, never()).store(any());
         verify(gameDAO).create(any(Game.class));
+    }
+
+    @Test
+    void add_shouldThrowPublisherNotFoundException_whenPublisherInvalid() {
+        when(gameDAO.findByTitle(validGameDTO.title())).thenReturn(Optional.empty());
+        when(contributorDAO.findByUsername(validGameDTO.contributorUsername())).thenReturn(Optional.of(mockContributor));
+        when(publisherDAO.findByLabel(any())).thenReturn(Optional.empty());
+
+        assertThrows(Exceptions.PublisherNotFoundException.class, () -> gameService.add(validGameDTO));
+    }
+
+    @Test
+    void add_shouldThrowPlatformNotFoundException_whenPlatformInvalid() {
+        when(gameDAO.findByTitle(validGameDTO.title())).thenReturn(Optional.empty());
+        when(contributorDAO.findByUsername(validGameDTO.contributorUsername())).thenReturn(Optional.of(mockContributor));
+        when(publisherDAO.findByLabel(any())).thenReturn(Optional.of(mock( com.centennial.gamepickd.entities.Publisher.class)));
+
+        // Provide an invalid platform string
+        AddGameDTO dtoInvalidPlatform = new AddGameDTO(
+                validGameDTO.title(),
+                validGameDTO.description(),
+                validGameDTO.genres(),
+                validGameDTO.publisher(),
+                "INVALID_PLATFORM",
+                validGameDTO.contributorUsername(),
+                validGameDTO.coverImage()
+        );
+
+        assertThrows(Exceptions.PlatformNotFoundException.class, () -> gameService.add(dtoInvalidPlatform));
     }
 
     @Test
