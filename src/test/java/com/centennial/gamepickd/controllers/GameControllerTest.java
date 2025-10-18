@@ -6,6 +6,8 @@ import com.centennial.gamepickd.services.contracts.GameService;
 import com.centennial.gamepickd.services.contracts.StorageService;
 import com.centennial.gamepickd.util.Exceptions;
 import com.centennial.gamepickd.util.enums.GenreType;
+import com.centennial.gamepickd.util.enums.PlatformType;
+import com.centennial.gamepickd.util.enums.PublisherType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,14 +179,16 @@ class GameControllerTest {
 
     @Test
     void getAllGames_shouldReturnOkAndPagedResults() throws Exception {
-        // Arrange — mock service returning one sample GameDTO
+        // Arrange
         GameDTO sampleGame = new GameDTO(
                 1L,
                 "Sample Game",
                 "A cool adventure game",
                 "cover.png",
                 Set.of(GenreType.RPG),
-                LocalDateTime.now()  // <-- added postedAt
+                PublisherType.EPIC_GAMES,
+                Set.of(PlatformType.PC_WINDOWS),
+                LocalDateTime.now()
         );
 
         Page<GameDTO> mockPage = new PageImpl<>(List.of(sampleGame), PageRequest.of(0, 12), 1);
@@ -194,7 +198,10 @@ class GameControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/games")
                         .param("page", "0")
                         .param("size", "12"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._embedded.gameDTOList[0].title").value("Sample Game"))
+                .andExpect(jsonPath("$._embedded.gameDTOList[0].publisher").value("EPIC_GAMES"))
+                .andExpect(jsonPath("$._embedded.gameDTOList[0].genres[0]").value("RPG"));
     }
 
     @Test
@@ -211,7 +218,7 @@ class GameControllerTest {
     }
 
     @Test
-    void getAllGames_shouldReturnFilteredResults_whenTitleIsProvided() throws Exception {
+    void getAllGames_shouldReturnFilteredResults_whenFiltersAreProvided() throws Exception {
         // Arrange
         GameDTO filteredGame = new GameDTO(
                 2L,
@@ -219,6 +226,8 @@ class GameControllerTest {
                 "A fantasy RPG",
                 "zelda.png",
                 Set.of(GenreType.RPG, GenreType.MMORPG),
+                PublisherType.NINTENDO,
+                Set.of(PlatformType.NINTENDO_SWITCH),
                 LocalDateTime.now()
         );
 
@@ -227,10 +236,14 @@ class GameControllerTest {
 
         // Act + Assert
         mockMvc.perform(MockMvcRequestBuilders.get("/api/games")
-                        .param("title", "Zelda"))
+                        .param("title", "Zelda")
+                        .param("genres", "RPG,MMORPG")
+                        .param("publisher", "NINTENDO")
+                        .param("platforms", "NINTENDO_SWITCH"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._embedded.gameDTOList[0].title").value("Zelda Adventure 5"))
-                .andExpect(jsonPath("$._embedded.gameDTOList[0].genres[0]").value("RPG"));
+                .andExpect(jsonPath("$._embedded.gameDTOList[0].publisher").value("NINTENDO"))
+                .andExpect(jsonPath("$._embedded.gameDTOList[0].platforms[0]").value("NINTENDO_SWITCH"));
     }
 
     @Test
