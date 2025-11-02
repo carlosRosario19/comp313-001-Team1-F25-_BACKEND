@@ -201,10 +201,8 @@ INSERT INTO GENRES (LABEL) VALUES
 ('SCI-FI'),
 ('HISTORICAL'),
 ('MYSTERY'),
-('STRATEGY'),
 ('BOARD GAME'),
-('QUIZ/TRIVIA');
-
+('QUIZ/TRIVIA'),
 ('MOBA');
 
 -- 🎮 Consoles
