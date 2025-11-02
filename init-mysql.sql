@@ -203,7 +203,6 @@ INSERT INTO GENRES (LABEL) VALUES
 ('MYSTERY'),
 ('BOARD GAME'),
 ('QUIZ/TRIVIA');
-
 ('MOBA');
 
 -- 🎮 Consoles
