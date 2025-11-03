@@ -99,7 +99,7 @@ class GenreTest {
     @Test
     void testGenreTypeFromLabelInvalidThrowsException() {
         Exception exception = assertThrows(IllegalArgumentException.class,
-                () -> GenreType.fromValue("PUZZLE"));
+                () -> GenreType.fromValue("DUMMY-GENRE"));
 
         assertTrue(exception.getMessage().contains("Unknown genre label"));
     }
