@@ -187,7 +187,7 @@ class GameControllerTest {
                 "cover.png",
                 Set.of(GenreType.RPG),
                 PublisherType.EPIC_GAMES,
-                Set.of(PlatformType.PC_WINDOWS),
+                Set.of(PlatformType.STEAM),
                 LocalDateTime.now()
         );
 

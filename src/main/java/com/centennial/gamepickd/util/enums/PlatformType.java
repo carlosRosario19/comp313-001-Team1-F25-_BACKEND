@@ -2,11 +2,11 @@ package com.centennial.gamepickd.util.enums;
 
 public enum PlatformType {
 
-    // 🎮 Consoles
-    PLAYSTATION_5("PlayStation 5"),
+	PLAYSTATION_5("PlayStation 5"),
     PLAYSTATION_4("PlayStation 4"),
     PLAYSTATION_3("PlayStation 3"),
-    XBOX_SERIES_X("Xbox Series X"),
+    PLAYSTATION_2("PlayStation 2"),
+    PLAYSTATION_1("PlayStation 1"),
     XBOX_SERIES_S("Xbox Series S"),
     XBOX_ONE("Xbox One"),
     XBOX_360("Xbox 360"),
@@ -15,25 +15,12 @@ public enum PlatformType {
     NINTENDO_WII("Nintendo Wii"),
     NINTENDO_3DS("Nintendo 3DS"),
     NINTENDO_DS("Nintendo DS"),
-
-    // 💻 PC Platforms
-    PC_WINDOWS("PC (Windows)"),
-    PC_MAC("PC (Mac)"),
-    PC_LINUX("PC (Linux)"),
-
-    // 📱 Mobile Platforms
+    GAME_BOY_COLOR("Game Boy Color"),
+    STEAM("Steam"),
+    EPIC_GAMES("Epic Games"),
     ANDROID("Android"),
     IOS("iOS"),
-
-    // ☁️ Cloud / Streaming Platforms
-    GOOGLE_STADIA("Google Stadia"),
-    AMAZON_LUNA("Amazon Luna"),
-    NVIDIA_GEFORCENOW("NVIDIA GeForce NOW"),
-    XBOX_CLOUD_GAMING("Xbox Cloud Gaming"),
-
-    // 🕹️ Handheld / Legacy Platforms
     PLAYSTATION_VITA("PlayStation Vita"),
-    PLAYSTATION_PORTABLE("PlayStation Portable"),
     NINTENDO_GAMECUBE("Nintendo GameCube"),
     NINTENDO_64("Nintendo 64"),
     SEGA_DREAMCAST("Sega Dreamcast");

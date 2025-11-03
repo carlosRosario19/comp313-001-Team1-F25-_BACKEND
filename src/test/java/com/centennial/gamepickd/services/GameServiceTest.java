@@ -78,7 +78,7 @@ class GameServiceTest {
                 "test game description",
                 "RPG,MMORPG",
                 "UBISOFT",
-                "PlayStation 5,PC (Windows)",
+                "PlayStation 5,Steam",
                 "contributor",
                 coverImage
         );

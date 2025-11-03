@@ -67,7 +67,7 @@ class GameDAOJpaImplTest {
 
         // 4️⃣ Create Platforms
         var platform1 = new com.centennial.gamepickd.entities.Platform();
-        platform1.setName(PlatformType.PC_WINDOWS);
+        platform1.setName(PlatformType.STEAM);
         entityManager.persist(platform1);
 
         var platform2 = new com.centennial.gamepickd.entities.Platform();
@@ -122,7 +122,7 @@ class GameDAOJpaImplTest {
 
         // 4️⃣ Create Platforms
         var platform1 = new com.centennial.gamepickd.entities.Platform();
-        platform1.setName(PlatformType.XBOX_SERIES_X);
+        platform1.setName(PlatformType.XBOX_SERIES_S);
         entityManager.persist(platform1);
 
         Set<com.centennial.gamepickd.entities.Platform> platforms = Set.of(platform1);
@@ -194,7 +194,7 @@ class GameDAOJpaImplTest {
 
         // --- 3️⃣ Setup platforms ---
         var windows = new Platform();
-        windows.setName(PlatformType.PC_WINDOWS);
+        windows.setName(PlatformType.STEAM);
         entityManager.persist(windows);
 
         var playstation = new Platform();
@@ -202,7 +202,7 @@ class GameDAOJpaImplTest {
         entityManager.persist(playstation);
 
         var xbox = new Platform();
-        xbox.setName(PlatformType.XBOX_SERIES_X);
+        xbox.setName(PlatformType.XBOX_SERIES_S);
         entityManager.persist(xbox);
 
         Set<Platform> pcAndConsole = Set.of(windows, playstation);

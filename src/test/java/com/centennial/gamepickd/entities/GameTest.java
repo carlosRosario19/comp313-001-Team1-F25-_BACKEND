@@ -33,7 +33,7 @@ class GameTest {
         testGenre2 = new Genre(GenreType.MOBA);
 
         testPlatform1 = new Platform();
-        testPlatform1.setName(PlatformType.PC_WINDOWS);
+        testPlatform1.setName(PlatformType.STEAM);
 
         testPlatform2 = new Platform();
         testPlatform2.setName(PlatformType.PLAYSTATION_5);
