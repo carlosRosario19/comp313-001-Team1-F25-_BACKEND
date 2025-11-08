@@ -169,5 +169,11 @@ Add a new review.
 }
 ```
 
+### GET `/api/reviews/{gameId}`
 
+Retrieves all reviews by the game id.
+
+Query Parameters Example to fetch all the reviews of the game with id 3
+
+```/api/reviews/3```
 
