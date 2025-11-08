@@ -46,6 +46,20 @@ public class GameDAOJpaImpl implements GameDAO {
     }
 
     @Override
+    public Optional<Game> findById(long gameId) {
+        String query = "SELECT g FROM Game g WHERE g.id = :gameId";
+        try{
+            Game game = entityManager.createQuery(query, Game.class)
+                    .setParameter("gameId", gameId)
+                    .getSingleResult();
+
+            return Optional.ofNullable(game);
+        } catch (NoResultException e){
+            return Optional.empty();
+        }
+    }
+
+    @Override
     public void create(Game game) {
         entityManager.persist(game);
     }

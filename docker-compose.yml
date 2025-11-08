@@ -33,6 +33,40 @@ services:
       timeout: 5s
       retries: 6
 
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    container_name: dynamodb-container
+    hostname: dynamodb
+    ports:
+      - "8000:8000"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ."
+    working_dir: /home/dynamodblocal
+    volumes:
+      - dynamodb-data:/home/dynamodblocal
+    healthcheck:
+      test: [ "CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8000" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  dynamodb-setup:
+    image: amazon/aws-cli:latest
+    container_name: dynamodb-setup
+    depends_on:
+      dynamodb:
+        condition: service_started
+    environment:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: us-east-1
+    volumes:
+      - ./init-dynamodb.sh:/init-dynamodb.sh
+    entrypoint: [ "/bin/sh", "/init-dynamodb.sh" ]
+    profiles:
+      - dynamodb-setup
+    restart: "no"
+
 volumes:
   mysql-data:
   s3mock-data:
+  dynamodb-data:

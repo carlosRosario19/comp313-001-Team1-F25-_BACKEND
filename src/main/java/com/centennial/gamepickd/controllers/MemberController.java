@@ -3,6 +3,7 @@ package com.centennial.gamepickd.controllers;
 import com.centennial.gamepickd.dtos.AddMemberDTO;
 import com.centennial.gamepickd.services.contracts.MemberService;
 import com.centennial.gamepickd.util.Exceptions;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +23,7 @@ public class MemberController {
     }
 
     @PostMapping("members")
-    public void addMember(@RequestBody AddMemberDTO addMemberDTO) throws
+    public void addMember(@Valid @RequestBody AddMemberDTO addMemberDTO) throws
             Exceptions.UsernameAlreadyExistsException,
             Exceptions.EmailAlreadyExistsException
     {

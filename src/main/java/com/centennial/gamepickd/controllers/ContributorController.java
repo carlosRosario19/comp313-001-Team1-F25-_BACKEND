@@ -3,6 +3,7 @@ package com.centennial.gamepickd.controllers;
 import com.centennial.gamepickd.dtos.AddContributorDTO;
 import com.centennial.gamepickd.services.contracts.ContributorService;
 import com.centennial.gamepickd.util.Exceptions;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +23,7 @@ public class ContributorController {
     }
 
     @PostMapping("contributors")
-    public void addMember(@RequestBody AddContributorDTO addContributorDTO) throws
+    public void addMember(@Valid @RequestBody AddContributorDTO addContributorDTO) throws
             Exceptions.UsernameAlreadyExistsException,
             Exceptions.EmailAlreadyExistsException
     {

@@ -9,7 +9,8 @@ public enum Routes {
     IMAGES("/api/images/**"),
     GENRES("/api/genres"),
     PLATFORMS("/api/platforms"),
-    PUBLISHERS("/api/publishers");
+    PUBLISHERS("/api/publishers"),
+    REVIEWS("/api/reviews");
 
     private final String path;
 
