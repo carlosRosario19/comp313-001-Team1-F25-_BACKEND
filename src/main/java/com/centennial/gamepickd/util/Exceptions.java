@@ -67,4 +67,8 @@ public class Exceptions {
         public GameNotFoundException(String message) { super(message);}
     }
 
+    public static class ReviewNotFoundException extends Exception {
+        public ReviewNotFoundException(String message) { super(message);}
+    }
+
 }
