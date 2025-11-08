@@ -120,9 +120,9 @@ This endpoint is only allowed to `{ADMIN, CONTRIBUTOR}` users.
 ```
 title=Dark Souls
 description=A challenging RPG
-genres=RPG,ADVENTURE
-publisher=EPIC_GAMES
-platforms=PC,PLAYSTATION
+genres=RPG,MMORPG
+publisher=electronic arts
+platforms=Nintendo Switch,Nintendo Wii U
 contributorUsername=contributor
 coverImage=image.jpg
 ```
