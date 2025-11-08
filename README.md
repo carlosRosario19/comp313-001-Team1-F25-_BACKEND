@@ -177,3 +177,15 @@ Query Parameters Example to fetch all the reviews of the game with id 3
 
 ```/api/reviews/3```
 
+### DELETE `/api/reviews`
+
+Delete an existing review.
+
+#### Request Body
+```json
+{
+    "reviewId" : "e559d78b-667e-4c68-a1da-faea54632280",
+    "timeStamp" : "2025-11-08T21:07:32.345124446Z"
+}
+```
+
