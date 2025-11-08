@@ -1,6 +1,7 @@
 package com.centennial.gamepickd.controllers;
 
 import com.centennial.gamepickd.dtos.AddReviewDTO;
+import com.centennial.gamepickd.dtos.DeleteReviewDTO;
 import com.centennial.gamepickd.dtos.ReviewDTO;
 import com.centennial.gamepickd.entities.Review;
 import com.centennial.gamepickd.services.contracts.ReviewService;
@@ -33,6 +34,11 @@ public class ReviewController {
 
     @GetMapping("/reviews/{gameId}")
     public Set<ReviewDTO> getAllReviewsByGame(@PathVariable long gameId) throws Exceptions.GameNotFoundException {
-        return this.reviewService.getAllReviewsByGameId(gameId);
+        return reviewService.getAllReviewsByGameId(gameId);
+    }
+
+    @DeleteMapping("reviews")
+    public void deleteReviewById(@RequestBody DeleteReviewDTO deleteReviewDTO) throws Exceptions.ReviewNotFoundException {
+        reviewService.deleteById(deleteReviewDTO);
     }
 }

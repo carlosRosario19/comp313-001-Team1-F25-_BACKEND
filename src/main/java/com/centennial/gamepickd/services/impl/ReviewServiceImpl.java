@@ -1,7 +1,9 @@
 package com.centennial.gamepickd.services.impl;
 
 import com.centennial.gamepickd.dtos.AddReviewDTO;
+import com.centennial.gamepickd.dtos.DeleteReviewDTO;
 import com.centennial.gamepickd.dtos.ReviewDTO;
+import com.centennial.gamepickd.entities.Review;
 import com.centennial.gamepickd.repository.contracts.GameDAO;
 import com.centennial.gamepickd.repository.contracts.ReviewDAO;
 import com.centennial.gamepickd.repository.contracts.UserDAO;
@@ -15,6 +17,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,5 +68,31 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewDAO.findAllByGameId(gameId).stream()
                 .map(review -> mapper.reviewToReviewDto(review))
                 .collect(Collectors.toSet());
+    }
+
+    @Transactional
+    @CacheEvict(value = "reviewsCache", allEntries = true)
+    @Override
+    public Review deleteById(DeleteReviewDTO deleteReviewDTO) throws Exceptions.ReviewNotFoundException {
+        Optional<Review> deleted = reviewDAO.deleteByIdAndTimeStamp(
+                deleteReviewDTO.reviewId(),
+                deleteReviewDTO.timeStamp()
+        );
+
+        if (deleted.isEmpty()) {
+            throw new Exceptions.ReviewNotFoundException(
+                    "The review with id " + deleteReviewDTO.reviewId() + " was not found."
+            );
+        }
+
+        Review review = deleted.get();
+
+        if (!review.getTimeStamp().equals(deleteReviewDTO.timeStamp())) {
+            throw new Exceptions.ReviewNotFoundException(
+                    "The timestamp did not match the review id. It might be incorrect."
+            );
+        }
+
+        return review;
     }
 }

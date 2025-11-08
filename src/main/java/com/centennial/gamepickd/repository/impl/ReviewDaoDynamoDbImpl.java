@@ -12,6 +12,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -68,6 +69,59 @@ public class ReviewDaoDynamoDbImpl implements ReviewDAO {
         } catch (Exception e) {
             logger.error("Failed to fetch reviews by gameId {}: {}", gameId, e.getMessage(), e);
             return Set.of();
+        }
+    }
+
+    @Override
+    public Optional<Review> deleteByIdAndTimeStamp(String reviewId, String timeStamp) {
+        try {
+            Optional<Review> reviewOpt = findById(reviewId);
+
+            if (reviewOpt.isEmpty()) {
+                return Optional.empty();
+            }
+
+            Review review = reviewOpt.get();
+
+            if (!review.getTimeStamp().equals(timeStamp)) {
+                // The id exists but timestamp does not match
+                return Optional.of(review); // return it so service can throw proper exception
+            }
+
+            // Delete the item
+            Key key = Key.builder()
+                    .partitionValue(reviewId)
+                    .sortValue(timeStamp)
+                    .build();
+
+            reviewTable.deleteItem(r -> r.key(key));
+
+            return Optional.of(review);
+
+        } catch (Exception e) {
+            logger.error("Failed to delete review with id {} and timestamp {}: {}", reviewId, timeStamp, e.getMessage(), e);
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<Review> findById(String reviewId) {
+        try {
+            // Query the table by reviewId (partition key) — might return multiple items if composite key allows
+            var results = reviewTable.query(r ->
+                    r.queryConditional(QueryConditional.keyEqualTo(Key.builder()
+                            .partitionValue(reviewId)
+                            .build()))
+            );
+
+            // Flatten results and return first match
+            return results.stream()
+                    .flatMap(page -> page.items().stream())
+                    .findFirst();
+
+        } catch (Exception e) {
+            logger.error("Failed to fetch review by id {}: {}", reviewId, e.getMessage(), e);
+            return Optional.empty();
         }
     }
 }
