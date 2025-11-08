@@ -23,10 +23,16 @@ You need to start the database containers in detached mode:
   ```bash
   docker compose up -d
   ```
+    ```bash
+  docker compose run --rm dynamodb-setup
+  ```
  
 - **Using Podman Compose**
   ```bash
-  docker compose up -d
+  podman compose up -d
+  ```
+    ```bash
+  podman compose run --rm dynamodb-setup
   ```
 
 ### 2. Start the Spring Boot Application
@@ -148,6 +154,20 @@ Retrieves all platforms.
 ### GET `/api/publishers`
 
 Retrieves all publishers.
+
+### POST `/api/reviews`
+
+Add a new review.
+
+#### Request Body
+```json
+{
+    "comment" : "Very nice",
+    "rate" : 3,
+    "username" : "member",
+    "gameId" : 3
+}
+```
 
 
 
