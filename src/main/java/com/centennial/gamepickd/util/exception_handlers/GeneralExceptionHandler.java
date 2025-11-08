@@ -7,6 +7,7 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -31,6 +32,22 @@ public class GeneralExceptionHandler {
         }
         problemDetail.setProperty("violations", violations);
 
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ProblemDetail> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpServletRequest request) {
+
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problemDetail.setTitle("Validation Error");
+        problemDetail.setDetail("Invalid input data.");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+
+        Map<String, String> violations = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                violations.put(error.getField(), error.getDefaultMessage()));
+
+        problemDetail.setProperty("violations", violations);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
     }
 

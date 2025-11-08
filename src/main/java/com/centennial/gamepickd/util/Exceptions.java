@@ -59,4 +59,12 @@ public class Exceptions {
         public GenreNotFoundException(String message) { super(message);}
     }
 
+    public static class UserNotFoundException extends Exception {
+        public UserNotFoundException(String message) { super(message);}
+    }
+
+    public static class GameNotFoundException extends Exception {
+        public GameNotFoundException(String message) { super(message);}
+    }
+
 }

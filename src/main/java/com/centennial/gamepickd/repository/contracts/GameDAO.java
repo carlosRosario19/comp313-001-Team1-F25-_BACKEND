@@ -12,6 +12,7 @@ import java.util.Set;
 
 public interface GameDAO {
     Optional<Game> findByTitle(String title);
+    Optional<Game> findById(long gameId);
     void create(Game game);
     Page<Game> findAllOrderByPostedAtDesc(String title,
                                           Set<GenreType> genres,

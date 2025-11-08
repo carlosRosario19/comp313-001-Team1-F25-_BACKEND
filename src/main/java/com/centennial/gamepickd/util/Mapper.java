@@ -1,9 +1,6 @@
 package com.centennial.gamepickd.util;
 
-import com.centennial.gamepickd.dtos.AddContributorDTO;
-import com.centennial.gamepickd.dtos.AddGameDTO;
-import com.centennial.gamepickd.dtos.AddMemberDTO;
-import com.centennial.gamepickd.dtos.GameDTO;
+import com.centennial.gamepickd.dtos.*;
 import com.centennial.gamepickd.entities.*;
 import com.centennial.gamepickd.util.enums.GenreType;
 import com.centennial.gamepickd.util.enums.PlatformType;
@@ -11,9 +8,12 @@ import com.centennial.gamepickd.util.enums.PublisherType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -93,4 +93,22 @@ public class Mapper {
                 game.getCreatedAt()
         );
     };
+
+    public Review addReviewDtoToReview(AddReviewDTO addReviewDTO) {
+        // Generate unique ID
+        String reviewId = UUID.randomUUID().toString();
+
+        // Generate ISO 8601 timestamp
+        String timeStamp = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
+
+        // Map fields from DTO to entity
+        return new Review(
+                reviewId,
+                timeStamp,
+                addReviewDTO.comment(),
+                addReviewDTO.rate(),
+                addReviewDTO.username(),
+                addReviewDTO.gameId()
+        );
+    }
 }
