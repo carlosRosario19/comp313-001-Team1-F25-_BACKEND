@@ -19,7 +19,7 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport;
 @EnableCaching
 public class GamepickdApplication {
 
-	static void main(String[] args) {
+	public static void main(String[] args) {
 		SpringApplication.run(GamepickdApplication.class, args);
 	}
 

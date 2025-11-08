@@ -111,4 +111,15 @@ public class Mapper {
                 addReviewDTO.gameId()
         );
     }
+
+    public ReviewDTO reviewToReviewDto(Review review) {
+        return new ReviewDTO(
+                review.getReviewId(),
+                review.getTimeStamp(),
+                review.getComment(),
+                review.getRate(),
+                review.getUsername(),
+                review.getGameId()
+        );
+    }
 }

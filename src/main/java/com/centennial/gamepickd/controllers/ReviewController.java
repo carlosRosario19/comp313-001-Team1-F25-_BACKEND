@@ -1,15 +1,16 @@
 package com.centennial.gamepickd.controllers;
 
 import com.centennial.gamepickd.dtos.AddReviewDTO;
+import com.centennial.gamepickd.dtos.ReviewDTO;
+import com.centennial.gamepickd.entities.Review;
 import com.centennial.gamepickd.services.contracts.ReviewService;
 import com.centennial.gamepickd.util.Exceptions;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api")
@@ -28,5 +29,10 @@ public class ReviewController {
             Exceptions.GameNotFoundException
     {
         this.reviewService.add(addReviewDTO);
+    }
+
+    @GetMapping("/reviews/{gameId}")
+    public Set<ReviewDTO> getAllReviewsByGame(@PathVariable long gameId) throws Exceptions.GameNotFoundException {
+        return this.reviewService.getAllReviewsByGameId(gameId);
     }
 }
