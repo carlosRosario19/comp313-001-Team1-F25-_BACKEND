@@ -7,10 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Repository
 public class ReviewDaoDynamoDbImpl implements ReviewDAO {
@@ -40,6 +42,32 @@ public class ReviewDaoDynamoDbImpl implements ReviewDAO {
             reviewTable.putItem(request);
         } catch (Exception e) {
             logger.error("Failed to save review to DynamoDB: {}", e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Set<Review> findAllByGameId(long gameId) {
+        try {
+            DynamoDbIndex<Review> gameIdIndex = reviewTable.index("gameId-timeStamp-index");
+
+            // Perform the query — returns SdkIterable<Page<Review>>
+            var results = gameIdIndex.query(r ->
+                    r.queryConditional(
+                            QueryConditional.keyEqualTo(
+                                    Key.builder().partitionValue(gameId).build()
+                            )
+                    )
+            );
+
+            // Flatten manually
+            Set<Review> reviews = new HashSet<>();
+            results.forEach(page -> reviews.addAll(page.items()));
+
+            return reviews;
+
+        } catch (Exception e) {
+            logger.error("Failed to fetch reviews by gameId {}: {}", gameId, e.getMessage(), e);
+            return Set.of();
         }
     }
 }

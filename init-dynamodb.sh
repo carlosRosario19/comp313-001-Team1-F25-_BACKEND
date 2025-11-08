@@ -13,10 +13,21 @@ else
     --attribute-definitions \
         AttributeName=reviewId,AttributeType=S \
         AttributeName=timeStamp,AttributeType=S \
+        AttributeName=gameId,AttributeType=N \
     --key-schema \
         AttributeName=reviewId,KeyType=HASH \
         AttributeName=timeStamp,KeyType=RANGE \
     --billing-mode PAY_PER_REQUEST \
+    --global-secondary-indexes '[
+          {
+            "IndexName": "gameId-timeStamp-index",
+            "KeySchema": [
+              {"AttributeName": "gameId", "KeyType": "HASH"},
+              {"AttributeName": "timeStamp", "KeyType": "RANGE"}
+            ],
+            "Projection": {"ProjectionType": "ALL"}
+          }
+        ]' \
     --endpoint-url http://dynamodb:8000
 
   echo "Waiting for table to be created..."
