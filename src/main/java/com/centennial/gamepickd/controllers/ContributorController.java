@@ -23,7 +23,7 @@ public class ContributorController {
     }
 
     @PostMapping("contributors")
-    public void addMember(@Valid @RequestBody AddContributorDTO addContributorDTO) throws
+    public void addContributor(@Valid @RequestBody AddContributorDTO addContributorDTO) throws
             Exceptions.UsernameAlreadyExistsException,
             Exceptions.EmailAlreadyExistsException
     {

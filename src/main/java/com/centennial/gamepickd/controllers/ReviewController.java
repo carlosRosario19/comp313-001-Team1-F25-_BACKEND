@@ -25,9 +25,7 @@ public class ReviewController {
     }
 
     @PostMapping("/reviews")
-    public void addReview(@Valid @RequestBody AddReviewDTO addReviewDTO) throws
-            Exceptions.UserNotFoundException,
-            Exceptions.GameNotFoundException
+    public void addReview(@Valid @RequestBody AddReviewDTO addReviewDTO) throws Exceptions.GameNotFoundException
     {
         this.reviewService.add(addReviewDTO);
     }

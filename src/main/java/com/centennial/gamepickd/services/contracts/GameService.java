@@ -22,8 +22,10 @@ public interface GameService {
     void update(UpdateGameDTO updateGameDTO) throws
             Exceptions.GameNotFoundException,
             Exceptions.StorageException,
-            Exceptions.ContributorNotFoundException,
             Exceptions.PublisherNotFoundException,
             Exceptions.PlatformNotFoundException,
+            Exceptions.GameAlreadyExistsException,
             Exceptions.GenreNotFoundException;
+
+    void delete(long id) throws Exceptions.GameNotFoundException, Exceptions.StorageFileNotFoundException;
 }

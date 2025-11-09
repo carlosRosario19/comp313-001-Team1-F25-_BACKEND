@@ -8,6 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@NamedEntityGraph(
+        name = "Game.withContributorAndUser",
+        attributeNodes = {
+                @NamedAttributeNode(value = "contributor", subgraph = "contributor-user")
+        },
+        subgraphs = {
+                @NamedSubgraph(
+                        name = "contributor-user",
+                        attributeNodes = @NamedAttributeNode("user")
+                )
+        }
+)
 @NullMarked
 @Entity
 @Table(name = "GAMES")

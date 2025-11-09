@@ -12,4 +12,5 @@ public interface ReviewDAO {
     Optional<Review> deleteByIdAndTimeStamp(String reviewId, String timeStamp);
     Optional<Review> findById(String reviewId);
     Map<Long, Double> calculateAverageRateForGames(Set<Long> gameIds);
+    void deleteAll(Set<Review> reviews);
 }

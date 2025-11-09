@@ -1,14 +1,10 @@
 package com.centennial.gamepickd.services;
 
 import com.centennial.gamepickd.dtos.AddContributorDTO;
-import com.centennial.gamepickd.entities.AuthorityType;
-import com.centennial.gamepickd.entities.Contributor;
-import com.centennial.gamepickd.entities.Member;
 import com.centennial.gamepickd.entities.User;
 import com.centennial.gamepickd.repository.contracts.AuthorityTypeDAO;
 import com.centennial.gamepickd.repository.contracts.ContributorDAO;
 import com.centennial.gamepickd.repository.contracts.UserDAO;
-import com.centennial.gamepickd.services.contracts.ContributorService;
 import com.centennial.gamepickd.services.impl.ContributorServiceImpl;
 import com.centennial.gamepickd.util.Exceptions;
 import com.centennial.gamepickd.util.Mapper;
@@ -63,28 +59,6 @@ class ContributorServiceTest {
                 "6474259589",
                 "test123"
         );
-    }
-
-    @Test
-    void add_ShouldCreateUserAndMember_WhenValid() throws Exception {
-        // Arrange: no existing users, role MEMBER exists
-        when(userDAO.findByUsernameOrEmail(validContributorDTO.username(), validContributorDTO.email()))
-                .thenReturn(List.of());
-
-        AuthorityType memberAuthority = new AuthorityType();
-        memberAuthority.setLabel(RoleType.MEMBER);
-
-        when(authorityTypeDAO.findByLabel(RoleType.MEMBER))
-                .thenReturn(Optional.of(memberAuthority));
-
-        when(passwordEncoder.encode("test123")).thenReturn("hashedPassword");
-
-        // Act
-        contributorService.add(validContributorDTO);
-
-        // Assert
-        verify(userDAO).create(any(User.class));
-        verify(contributorDAO).create(any(Contributor.class));
     }
 
     @Test

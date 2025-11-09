@@ -28,14 +28,14 @@ public class Mapper {
         return user;
     }
 
-    public User AddContributorDtoToUser(AddContributorDTO dto, AuthorityType authorityType, PasswordEncoder passwordEncoder){
+    public User AddContributorDtoToUser(AddContributorDTO dto, Set<AuthorityType> authorityTypeSet, PasswordEncoder passwordEncoder){
         User user = new User();
         user.setUsername(dto.username());
         user.setEmail(dto.email());
         String hashedPassword = passwordEncoder.encode(dto.password());
         user.setPassword(hashedPassword);
         user.setEnabled(true);
-        Set<AuthorityType> authorities = Set.of(authorityType);
+        Set<AuthorityType> authorities = authorityTypeSet;
         user.setAuthorities(authorities);
         return user;
     }
@@ -92,7 +92,7 @@ public class Mapper {
         );
     }
 
-    public Review addReviewDtoToReview(AddReviewDTO addReviewDTO) {
+    public Review addReviewDtoToReview(AddReviewDTO addReviewDTO, String username) {
         // Generate unique ID
         String reviewId = UUID.randomUUID().toString();
 
@@ -105,7 +105,7 @@ public class Mapper {
                 timeStamp,
                 addReviewDTO.comment(),
                 addReviewDTO.rate(),
-                addReviewDTO.username(),
+                username,
                 addReviewDTO.gameId()
         );
     }

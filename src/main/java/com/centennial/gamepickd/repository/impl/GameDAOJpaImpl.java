@@ -60,6 +60,25 @@ public class GameDAOJpaImpl implements GameDAO {
     }
 
     @Override
+    public Optional<Game> findByIdWithContributor(long gameId) {
+        try {
+            var entityGraph = entityManager.getEntityGraph("Game.withContributorAndUser");
+
+            TypedQuery<Game> query = entityManager.createQuery(
+                    "SELECT g FROM Game g WHERE g.id = :gameId", Game.class
+            );
+            query.setParameter("gameId", gameId);
+            query.setHint("jakarta.persistence.fetchgraph", entityGraph);
+
+            Game game = query.getSingleResult();
+            return Optional.of(game);
+
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
     public void create(Game game) {
         entityManager.persist(game);
     }
@@ -120,5 +139,10 @@ public class GameDAOJpaImpl implements GameDAO {
     @Override
     public void update(Game game) {
         entityManager.merge(game);
+    }
+
+    @Override
+    public void delete(Game game) {
+        entityManager.remove(game);
     }
 }

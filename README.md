@@ -123,7 +123,6 @@ description=A challenging RPG
 genres=RPG,MMORPG
 publisher=electronic arts
 platforms=Nintendo Switch,Nintendo Wii U
-contributorUsername=contributor
 coverImage=image.jpg
 ```
 
@@ -141,7 +140,6 @@ description=A challenging RPG
 genres=RPG,MMORPG
 publisher=electronic arts
 platforms=Nintendo Switch,Nintendo Wii U
-contributorUsername=contributor
 coverImagePath=934e35e5-ca4a-4120-850b-cab212102816.jpg
 coverImage=image.jpg
 ```
@@ -183,7 +181,6 @@ Add a new review.
 {
     "comment" : "Very nice",
     "rate" : 3,
-    "username" : "member",
     "gameId" : 3
 }
 ```
@@ -199,6 +196,7 @@ Query Parameters Example to fetch all the reviews of the game with id 3
 ### DELETE `/api/reviews`
 
 Delete an existing review.
+This endpoint is only allowed to `{ADMIN, CONTRIBUTOR}` users.
 
 #### Request Body
 ```json

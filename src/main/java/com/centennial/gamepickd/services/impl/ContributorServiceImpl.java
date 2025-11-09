@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ContributorServiceImpl implements ContributorService {
@@ -59,7 +60,11 @@ public class ContributorServiceImpl implements ContributorService {
         AuthorityType memberAuthority = authorityTypeDAO.findByLabel(RoleType.MEMBER)
                 .orElseThrow(() -> new IllegalStateException("Role MEMBER not found in DB"));
 
-        User user = mapper.AddContributorDtoToUser(dto, memberAuthority, passwordEncoder);
+        AuthorityType contributorAuthority = authorityTypeDAO.findByLabel(RoleType.CONTRIBUTOR)
+                .orElseThrow(() -> new IllegalStateException("Role CONTRIBUTOR not found in DB"));
+
+        Set<AuthorityType> authorities = Set.of(memberAuthority, contributorAuthority);
+        User user = mapper.AddContributorDtoToUser(dto, authorities, passwordEncoder);
         userDAO.create(user);
         contributorDAO.create(mapper.AddContributorDtoToContributor(dto, user));
     }
