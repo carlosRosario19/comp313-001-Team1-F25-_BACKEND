@@ -107,6 +107,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, Routes.REVIEWS.val()).hasRole(RoleType.MEMBER.val())
                         .requestMatchers(HttpMethod.GET, Routes.REVIEWS.val()).hasRole(RoleType.MEMBER.val())
                         .requestMatchers(HttpMethod.DELETE, Routes.REVIEWS.val()).hasRole(RoleType.CONTRIBUTOR.val())
+                        .requestMatchers(HttpMethod.GET, Routes.USERS.val()).hasRole(RoleType.ADMIN.val())
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))

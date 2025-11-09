@@ -5,6 +5,7 @@ import com.centennial.gamepickd.entities.*;
 import com.centennial.gamepickd.util.enums.GenreType;
 import com.centennial.gamepickd.util.enums.PlatformType;
 import com.centennial.gamepickd.util.enums.PublisherType;
+import com.centennial.gamepickd.util.enums.RoleType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -118,6 +119,22 @@ public class Mapper {
                 review.getRate(),
                 review.getUsername(),
                 review.getGameId()
+        );
+    }
+
+    public UserDTO userToUserDto(User user) {
+        // Extract RoleType set from AuthorityType entities
+        // convert AuthorityType → RoleType
+        Set<RoleType> roles = user.getAuthorities().stream()
+        .map(AuthorityType::getLabel)   // convert AuthorityType → RoleType
+        .collect(Collectors.toSet());
+
+        // Build and return the DTO
+        return new UserDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                roles
         );
     }
 }

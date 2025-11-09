@@ -206,3 +206,9 @@ This endpoint is only allowed to `{ADMIN, CONTRIBUTOR}` users.
 }
 ```
 
+### GET `/api/users`
+
+Retrieves all users.
+
+This endpoint is only allowed to `{ADMIN}` users.
+
