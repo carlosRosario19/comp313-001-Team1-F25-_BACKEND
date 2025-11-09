@@ -65,7 +65,6 @@ class GameControllerTest {
                 "RPG,MMORPG",
                 "UBISOFT",
                 "PlayStation 5,PC (Windows)",
-                "contributor",
                 coverImage
         );
     }
@@ -81,7 +80,6 @@ class GameControllerTest {
                         .param("genres", validGameDTO.genres())
                         .param("publisher", validGameDTO.publisher())
                         .param("platforms", validGameDTO.platforms())
-                        .param("contributorUsername", validGameDTO.contributorUsername())
         ).andExpect(status().isOk());
 
         verify(gameService).add(any(AddGameDTO.class));
@@ -101,7 +99,6 @@ class GameControllerTest {
                         .param("genres", validGameDTO.genres())
                         .param("publisher", validGameDTO.publisher())
                         .param("platforms", validGameDTO.platforms())
-                        .param("contributorUsername", validGameDTO.contributorUsername())
         ).andExpect(status().isConflict()); // 409 if you map that exception
     }
 
@@ -119,7 +116,6 @@ class GameControllerTest {
                         .param("genres", validGameDTO.genres())
                         .param("publisher", validGameDTO.publisher())
                         .param("platforms", validGameDTO.platforms())
-                        .param("contributorUsername", validGameDTO.contributorUsername())
         ).andExpect(status().isNotFound());
     }
 
@@ -137,7 +133,6 @@ class GameControllerTest {
                         .param("genres", validGameDTO.genres())
                         .param("publisher", validGameDTO.publisher())
                         .param("platforms", validGameDTO.platforms())
-                        .param("contributorUsername", validGameDTO.contributorUsername())
         ).andExpect(status().isBadRequest());
     }
 
@@ -155,7 +150,6 @@ class GameControllerTest {
                         .param("genres", validGameDTO.genres())
                         .param("publisher", validGameDTO.publisher())
                         .param("platforms", validGameDTO.platforms())
-                        .param("contributorUsername", validGameDTO.contributorUsername())
         ).andExpect(status().isNotFound());
     }
 
@@ -173,7 +167,6 @@ class GameControllerTest {
                         .param("genres", validGameDTO.genres())
                         .param("publisher", validGameDTO.publisher())
                         .param("platforms", validGameDTO.platforms())
-                        .param("contributorUsername", validGameDTO.contributorUsername())
         ).andExpect(status().isNotFound());
     }
 

@@ -13,6 +13,7 @@ import java.util.Set;
 public interface GameDAO {
     Optional<Game> findByTitle(String title);
     Optional<Game> findById(long gameId);
+    Optional<Game> findByIdWithContributor(long gameId);
     void create(Game game);
     Page<Game> findAllOrderByPostedAtDesc(String title,
                                           Set<GenreType> genres,
@@ -20,4 +21,5 @@ public interface GameDAO {
                                           Set<PlatformType> platforms,
                                           Pageable pageable);
     void update(Game game);
+    void delete(Game game);
 }

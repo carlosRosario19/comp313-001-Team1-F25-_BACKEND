@@ -8,6 +8,7 @@ import com.centennial.gamepickd.services.contracts.ReviewService;
 import com.centennial.gamepickd.services.contracts.StorageService;
 import com.centennial.gamepickd.util.Exceptions;
 import com.centennial.gamepickd.util.Mapper;
+import com.centennial.gamepickd.util.SecurityUtils;
 import com.centennial.gamepickd.util.enums.GenreType;
 import com.centennial.gamepickd.util.enums.PlatformType;
 import com.centennial.gamepickd.util.enums.PublisherType;
@@ -17,6 +18,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +37,7 @@ public class GameServiceImpl implements GameService {
     private final StorageService storageService;
     private final ReviewService reviewService;
     private final Mapper mapper;
+    private final SecurityUtils securityUtils;
     private static final int MAX_PAGE_SIZE = 100;
 
     public GameServiceImpl(
@@ -45,7 +48,8 @@ public class GameServiceImpl implements GameService {
             @Qualifier("platformDAOJpaImpl") PlatformDAO platformDAO,
             @Qualifier("s3StorageService") StorageService storageService,
             @Qualifier("reviewServiceImpl") ReviewService reviewService,
-            Mapper mapper
+            Mapper mapper,
+            SecurityUtils securityUtils
     ) {
         this.gameDAO = gameDAO;
         this.genreDAO = genreDAO;
@@ -55,6 +59,7 @@ public class GameServiceImpl implements GameService {
         this.storageService = storageService;
         this.reviewService = reviewService;
         this.mapper = mapper;
+        this.securityUtils = securityUtils;
     }
 
     @Transactional
@@ -73,9 +78,12 @@ public class GameServiceImpl implements GameService {
         if(existingGame.isPresent())
             throw new Exceptions.GameAlreadyExistsException("Game already exists in the database.");
 
+        // Step 1: Identify current user
+        String currentUsername = securityUtils.getCurrentUsername();
+
         // Validate that the contributor exists
-        Contributor contributor = contributorDAO.findByUsername(addGameDTO.contributorUsername())
-                .orElseThrow(() -> new Exceptions.ContributorNotFoundException("Contributor not found with username " + addGameDTO.contributorUsername()));
+        Contributor contributor = contributorDAO.findByUsername(currentUsername)
+                .orElseThrow(() -> new Exceptions.ContributorNotFoundException("Contributor not found with username " + currentUsername));
 
         // Query the Publisher, and if not found, throw exception
         Publisher publisher = publisherDAO.findByLabel(PublisherType.fromValue(addGameDTO.publisher()))
@@ -184,18 +192,40 @@ public class GameServiceImpl implements GameService {
     public void update(UpdateGameDTO updateGameDTO) throws
             Exceptions.GameNotFoundException,
             Exceptions.StorageException,
-            Exceptions.ContributorNotFoundException,
             Exceptions.PublisherNotFoundException,
             Exceptions.PlatformNotFoundException,
+            Exceptions.GameAlreadyExistsException,
             Exceptions.GenreNotFoundException
     {
-        //Fetch the game
-        Game game = gameDAO.findById(updateGameDTO.id())
+        // Step 1: Identify current user
+        String currentUsername = securityUtils.getCurrentUsername();
+
+        // Step 2: Fetch the game with contributor and user eagerly loaded
+        Game game = gameDAO.findByIdWithContributor(updateGameDTO.id())
                 .orElseThrow(() -> new Exceptions.GameNotFoundException("Game not found with id " + updateGameDTO.id()));
 
-        // Validate that the contributor exists
-        Contributor contributor = contributorDAO.findByUsername(updateGameDTO.contributorUsername())
-                .orElseThrow(() -> new Exceptions.ContributorNotFoundException("Contributor not found with username " + updateGameDTO.contributorUsername()));
+        // Step 3: Validate ownership or admin privilege
+        boolean isAdmin = securityUtils.hasRole("ROLE_ADMIN");
+
+        String contributorUsername = game.getContributor() != null
+                ? game.getContributor().getUser().getUsername()
+                : null;
+
+        if (!isAdmin && (contributorUsername == null || !contributorUsername.equals(currentUsername))) {
+            throw new AccessDeniedException("You are not allowed to update this game.");
+        }
+
+        // Step 4: Validate title uniqueness (if title changed)
+        if (!game.getTitle().equalsIgnoreCase(updateGameDTO.title())) {
+            Optional<Game> existingGameOpt = gameDAO.findByTitle(updateGameDTO.title());
+            if (existingGameOpt.isPresent() && existingGameOpt.get().getId() != game.getId()) {
+                throw new Exceptions.GameAlreadyExistsException(
+                        "A game with the title '" + updateGameDTO.title() + "' already exists."
+                );
+            }
+        }
+
+        Contributor contributor = game.getContributor();
 
         // Query the Publisher, and if not found, throw exception
         Publisher publisher = publisherDAO.findByLabel(PublisherType.fromValue(updateGameDTO.publisher()))
@@ -257,6 +287,35 @@ public class GameServiceImpl implements GameService {
 
         // Persist the updated game
         gameDAO.update(game);
+    }
+
+    @Transactional
+    @CacheEvict(value = "gamesCache", allEntries = true)
+    @Override
+    public void delete(long id) throws Exceptions.GameNotFoundException, Exceptions.StorageFileNotFoundException {
+
+        // Step 1: Identify current user
+        String currentUsername = securityUtils.getCurrentUsername();
+
+        // Step 2: Fetch the game with contributor and user eagerly loaded
+        Game game = gameDAO.findByIdWithContributor(id)
+                .orElseThrow(() -> new Exceptions.GameNotFoundException("Game not found with id " + id));
+
+        // Step 3: Validate ownership or admin privilege
+        boolean isAdmin = securityUtils.hasRole("ROLE_ADMIN");
+
+        String contributorUsername = game.getContributor() != null
+                ? game.getContributor().getUser().getUsername()
+                : null;
+
+        if (!isAdmin && (contributorUsername == null || !contributorUsername.equals(currentUsername))) {
+            throw new AccessDeniedException("You are not allowed to delete this game.");
+        }
+
+        // Step 4: Delete related entities and resources
+        reviewService.deleteAllByGameId(id);
+        storageService.delete(game.getCoverImagePath());
+        gameDAO.delete(game);
     }
 
     private Set<GenreType> parseGenres(String genresString) {

@@ -36,7 +36,6 @@ public class GameController {
             @RequestParam("genres") String genres,
             @RequestParam("publisher") String publisher,
             @RequestParam("platforms") String platforms,
-            @RequestParam("contributorUsername") String contributorUsername,
             @RequestParam("coverImage") MultipartFile coverImage
     ) throws
             Exceptions.GameAlreadyExistsException,
@@ -46,7 +45,7 @@ public class GameController {
             Exceptions.GenreNotFoundException,
             Exceptions.PublisherNotFoundException {
 
-        AddGameDTO addGameDTO = new AddGameDTO(title, description, genres, publisher, platforms, contributorUsername, coverImage);
+        AddGameDTO addGameDTO = new AddGameDTO(title, description, genres, publisher, platforms, coverImage);
         gameService.add(addGameDTO);
     }
 
@@ -73,18 +72,21 @@ public class GameController {
             @RequestParam("genres") String genres,
             @RequestParam("publisher") String publisher,
             @RequestParam("platforms") String platforms,
-            @RequestParam("contributorUsername") String contributorUsername,
             @RequestParam("coverImagePath") String coverImagePath,
             @RequestParam("coverImage") MultipartFile coverImage
     ) throws
             Exceptions.GameNotFoundException,
             Exceptions.StorageException,
-            Exceptions.ContributorNotFoundException,
             Exceptions.PlatformNotFoundException,
             Exceptions.GenreNotFoundException,
-            Exceptions.PublisherNotFoundException {
+            Exceptions.PublisherNotFoundException, Exceptions.GameAlreadyExistsException {
 
-        UpdateGameDTO updateGameDTO = new UpdateGameDTO(id, title, description, genres, publisher, platforms, contributorUsername, coverImagePath, coverImage);
+        UpdateGameDTO updateGameDTO = new UpdateGameDTO(id, title, description, genres, publisher, platforms, coverImagePath, coverImage);
         gameService.update(updateGameDTO);
+    }
+
+    @DeleteMapping("/games/{id}")
+    public void deleteGame(@PathVariable long id) throws Exceptions.GameNotFoundException, Exceptions.StorageFileNotFoundException {
+        gameService.delete(id);
     }
 }

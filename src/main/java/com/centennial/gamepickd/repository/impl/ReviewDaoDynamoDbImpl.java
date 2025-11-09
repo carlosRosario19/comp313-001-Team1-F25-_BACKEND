@@ -164,4 +164,28 @@ public class ReviewDaoDynamoDbImpl implements ReviewDAO {
             return averages;
         }
     }
+
+    @Override
+    public void deleteAll(Set<Review> reviews) {
+        if (reviews == null || reviews.isEmpty()) {
+            logger.warn("No reviews provided for bulk deletion.");
+            return;
+        }
+
+        for (Review review : reviews) {
+            try {
+                Key key = Key.builder()
+                        .partitionValue(review.getReviewId())
+                        .sortValue(review.getTimeStamp())
+                        .build();
+
+                reviewTable.deleteItem(r -> r.key(key));
+
+                logger.info("Deleted review with id {} and timestamp {}", review.getReviewId(), review.getTimeStamp());
+
+            } catch (Exception e) {
+                logger.error("Failed to delete review {}: {}", review.getReviewId(), e.getMessage(), e);
+            }
+        }
+    }
 }

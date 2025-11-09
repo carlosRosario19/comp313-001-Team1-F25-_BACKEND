@@ -20,9 +20,6 @@ public record AddGameDTO(
         @NotBlank(message = "Platforms are required")
         String platforms,
 
-        @NotBlank(message = "Contributor's username is required")
-        String contributorUsername,
-
         @NotNull
         MultipartFile coverImage
 ) { }

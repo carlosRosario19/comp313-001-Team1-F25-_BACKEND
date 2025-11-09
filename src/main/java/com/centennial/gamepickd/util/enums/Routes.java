@@ -1,15 +1,15 @@
 package com.centennial.gamepickd.util.enums;
 
 public enum Routes {
-    HEALTH_CHECK("/actuator/health"),
-    LOGIN("/api/login"),
-    MEMBERS("/api/members"),
-    CONTRIBUTORS("/api/contributors"),
-    GAMES("/api/games"),
+    HEALTH_CHECK("/actuator/health/**"),
+    LOGIN("/api/login/**"),
+    MEMBERS("/api/members/**"),
+    CONTRIBUTORS("/api/contributors/**"),
+    GAMES("/api/games/**"),
     IMAGES("/api/images/**"),
-    GENRES("/api/genres"),
-    PLATFORMS("/api/platforms"),
-    PUBLISHERS("/api/publishers"),
+    GENRES("/api/genres/**"),
+    PLATFORMS("/api/platforms/**"),
+    PUBLISHERS("/api/publishers/**"),
     REVIEWS("/api/reviews/**");
 
     private final String path;

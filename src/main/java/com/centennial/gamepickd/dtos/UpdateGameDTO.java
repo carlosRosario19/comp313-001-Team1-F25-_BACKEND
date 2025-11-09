@@ -23,9 +23,6 @@ public record UpdateGameDTO(
         @NotBlank(message = "Platforms are required")
         String platforms,
 
-        @NotBlank(message = "Contributor's username is required")
-        String contributorUsername,
-
         @NotBlank(message = "Cover Image Path is required")
         String coverImagePath,
 

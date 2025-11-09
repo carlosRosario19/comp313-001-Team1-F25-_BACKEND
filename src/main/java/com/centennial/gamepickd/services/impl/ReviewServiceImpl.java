@@ -3,6 +3,7 @@ package com.centennial.gamepickd.services.impl;
 import com.centennial.gamepickd.dtos.AddReviewDTO;
 import com.centennial.gamepickd.dtos.DeleteReviewDTO;
 import com.centennial.gamepickd.dtos.ReviewDTO;
+import com.centennial.gamepickd.entities.Game;
 import com.centennial.gamepickd.entities.Review;
 import com.centennial.gamepickd.repository.contracts.GameDAO;
 import com.centennial.gamepickd.repository.contracts.ReviewDAO;
@@ -10,10 +11,12 @@ import com.centennial.gamepickd.repository.contracts.UserDAO;
 import com.centennial.gamepickd.services.contracts.ReviewService;
 import com.centennial.gamepickd.util.Exceptions;
 import com.centennial.gamepickd.util.Mapper;
+import com.centennial.gamepickd.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,37 +28,37 @@ import java.util.stream.Collectors;
 @Service
 public class ReviewServiceImpl implements ReviewService {
 
-    private final UserDAO userDAO;
     private final GameDAO gameDAO;
     private final ReviewDAO reviewDAO;
     private final Mapper mapper;
+    private final SecurityUtils securityUtils;
 
     @Autowired
     public ReviewServiceImpl(
-            @Qualifier("userDAOJpaImpl") UserDAO userDAO,
             @Qualifier("gameDAOJpaImpl") GameDAO gameDAO,
             @Qualifier("reviewDaoDynamoDbImpl") ReviewDAO reviewDAO,
-            Mapper mapper
+            Mapper mapper,
+            SecurityUtils securityUtils
     ) {
-        this.userDAO = userDAO;
         this.gameDAO = gameDAO;
         this.reviewDAO = reviewDAO;
         this.mapper = mapper;
+        this.securityUtils = securityUtils;
     }
 
     @Transactional
     @CacheEvict(value = "reviewsCache", allEntries = true)
     @Override
-    public void add(AddReviewDTO addReviewDTO) throws Exceptions.UserNotFoundException, Exceptions.GameNotFoundException {
-        // Validate that the user exists
-        userDAO.findByUsername(addReviewDTO.username())
-                .orElseThrow(() -> new Exceptions.UserNotFoundException("User not found with username " + addReviewDTO.username()));
+    public void add(AddReviewDTO addReviewDTO) throws Exceptions.GameNotFoundException {
+
+        // Step 1: Identify current user
+        String currentUsername = securityUtils.getCurrentUsername();
 
         // Validate that the game exists
         gameDAO.findById(addReviewDTO.gameId())
                 .orElseThrow(() -> new Exceptions.GameNotFoundException("Game not found with id " + addReviewDTO.gameId()));
 
-        reviewDAO.create(mapper.addReviewDtoToReview(addReviewDTO));
+        reviewDAO.create(mapper.addReviewDtoToReview(addReviewDTO, currentUsername));
     }
 
     @Override
@@ -74,7 +77,10 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     @CacheEvict(value = "reviewsCache", allEntries = true)
     @Override
-    public Review deleteById(DeleteReviewDTO deleteReviewDTO) throws Exceptions.ReviewNotFoundException {
+    public void deleteById(DeleteReviewDTO deleteReviewDTO) throws Exceptions.ReviewNotFoundException {
+        // Step 1: Identify current user
+        String currentUsername = securityUtils.getCurrentUsername();
+
         Optional<Review> deleted = reviewDAO.deleteByIdAndTimeStamp(
                 deleteReviewDTO.reviewId(),
                 deleteReviewDTO.timeStamp()
@@ -88,17 +94,28 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review review = deleted.get();
 
+        if (!review.getUsername().equalsIgnoreCase(currentUsername)) {
+            throw new AccessDeniedException("You are not allowed to delete this review");
+        }
+
         if (!review.getTimeStamp().equals(deleteReviewDTO.timeStamp())) {
             throw new Exceptions.ReviewNotFoundException(
                     "The timestamp did not match the review id. It might be incorrect."
             );
         }
 
-        return review;
     }
 
     @Override
     public Map<Long, Double> getAverageRatesForGames(Set<Long> gameIds) {
         return reviewDAO.calculateAverageRateForGames(gameIds);
+    }
+
+    @Transactional
+    @CacheEvict(value = "reviewsCache", allEntries = true)
+    @Override
+    public void deleteAllByGameId(long gameId) {
+        Set<Review> reviews = reviewDAO.findAllByGameId(gameId);
+        reviewDAO.deleteAll(reviews);
     }
 }
