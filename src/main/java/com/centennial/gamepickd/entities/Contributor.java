@@ -81,16 +81,12 @@ public class Contributor extends PersonBase {
 
     @Override
     public String toString() {
-        String gameTitles = (games != null && !games.isEmpty())
-                ? games.stream().map(Game::getTitle).toList().toString()
-                : "[]";
 
         return "Contributor{" +
                 "id=" + id +
                 ", user='" + super.getUser() + '\'' +
                 ", firstName='" + super.getFirstName() + '\'' +
                 ", lastName='" + super.getLastName() + '\'' +
-                ", games=" + gameTitles +
                 '}';
     }
 

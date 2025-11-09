@@ -110,4 +110,31 @@ public class S3StorageService implements StorageService {
             throw new Exceptions.StorageException("Failed to delete files from S3", e);
         }
     }
+
+    @Override
+    public void delete(String filename) throws Exceptions.StorageFileNotFoundException {
+        try {
+            // Check if the file exists
+            HeadObjectRequest headRequest = HeadObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(filename)
+                    .build();
+
+            s3Client.headObject(headRequest); // Will throw if the object doesn't exist
+
+            // Proceed with deletion
+            DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(filename)
+                    .build();
+
+            s3Client.deleteObject(deleteRequest);
+
+        } catch (S3Exception e) {
+            if (e instanceof NoSuchKeyException || "Not Found".equalsIgnoreCase(e.awsErrorDetails().errorMessage())) {
+                throw new Exceptions.StorageFileNotFoundException("File not found: " + filename, e);
+            }
+            throw new Exceptions.StorageFileNotFoundException("Failed to delete file: " + filename, e);
+        }
+    }
 }

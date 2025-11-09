@@ -60,7 +60,6 @@ public class Platform {
         return "Platform{" +
                 "id=" + id +
                 ", name=" + name +
-                ", games=" + games +
                 '}';
     }
 }
