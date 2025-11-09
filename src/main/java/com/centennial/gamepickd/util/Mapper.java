@@ -10,11 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -64,8 +60,7 @@ public class Mapper {
         return new Game(addGameDTO.title(), addGameDTO.description());
     }
 
-    public final Function<Game, GameDTO> gameToGameDTO = game ->  {
-
+    public GameDTO gameToGameDto(Game game, Map<Long, Double> averages) {
         Set<GenreType> genres = Optional.ofNullable(game.getGenres())
                 .orElse(List.of())
                 .stream()
@@ -82,17 +77,20 @@ public class Mapper {
                 .map(Publisher::getName)
                 .orElse(null);
 
+        double average = averages.getOrDefault(game.getId(), 0.0);
+
         return new GameDTO(
                 game.getId(),
                 game.getTitle(),
                 game.getDescription(),
+                average,
                 game.getCoverImagePath(),
                 genres,
                 publisherName,
                 platforms,
                 game.getCreatedAt()
         );
-    };
+    }
 
     public Review addReviewDtoToReview(AddReviewDTO addReviewDTO) {
         // Generate unique ID

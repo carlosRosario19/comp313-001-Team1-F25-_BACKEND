@@ -1,10 +1,12 @@
 package com.centennial.gamepickd.entities;
 
+import org.jspecify.annotations.NullMarked;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
+@NullMarked
 @DynamoDbBean
 public class Review {
 
