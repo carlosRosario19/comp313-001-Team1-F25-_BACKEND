@@ -116,4 +116,9 @@ public class GameDAOJpaImpl implements GameDAO {
 
         return new PageImpl<>(query.getResultList(), pageable, total);
     }
+
+    @Override
+    public void update(Game game) {
+        entityManager.merge(game);
+    }
 }

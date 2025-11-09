@@ -3,6 +3,7 @@ package com.centennial.gamepickd.controllers;
 import com.centennial.gamepickd.dtos.AddGameDTO;
 import com.centennial.gamepickd.dtos.GameDTO;
 import com.centennial.gamepickd.dtos.SearchGameDTO;
+import com.centennial.gamepickd.dtos.UpdateGameDTO;
 import com.centennial.gamepickd.services.contracts.GameService;
 import com.centennial.gamepickd.util.Exceptions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,5 +63,28 @@ public class GameController {
         SearchGameDTO searchGameDTO = new SearchGameDTO(page, size, title, genres, publisher, platforms);
         Page<GameDTO> gamesPage = gameService.getAll(searchGameDTO);
         return assembler.toModel(gamesPage, EntityModel::of);
+    }
+
+    @PutMapping(value = "/games", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void updateGame(
+            @RequestParam("id") long id,
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam("genres") String genres,
+            @RequestParam("publisher") String publisher,
+            @RequestParam("platforms") String platforms,
+            @RequestParam("contributorUsername") String contributorUsername,
+            @RequestParam("coverImagePath") String coverImagePath,
+            @RequestParam("coverImage") MultipartFile coverImage
+    ) throws
+            Exceptions.GameNotFoundException,
+            Exceptions.StorageException,
+            Exceptions.ContributorNotFoundException,
+            Exceptions.PlatformNotFoundException,
+            Exceptions.GenreNotFoundException,
+            Exceptions.PublisherNotFoundException {
+
+        UpdateGameDTO updateGameDTO = new UpdateGameDTO(id, title, description, genres, publisher, platforms, contributorUsername, coverImagePath, coverImage);
+        gameService.update(updateGameDTO);
     }
 }

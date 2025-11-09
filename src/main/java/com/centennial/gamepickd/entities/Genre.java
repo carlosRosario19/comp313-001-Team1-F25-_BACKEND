@@ -66,7 +66,6 @@ public class Genre {
     public String toString() {
         return "Genre{" +
                 "label='" + label.getVal() + '\'' +
-                ", games=" + games +
                 '}';
     }
 }

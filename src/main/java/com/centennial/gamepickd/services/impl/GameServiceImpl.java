@@ -1,9 +1,6 @@
 package com.centennial.gamepickd.services.impl;
 
-import com.centennial.gamepickd.dtos.AddGameDTO;
-import com.centennial.gamepickd.dtos.GameDTO;
-import com.centennial.gamepickd.dtos.RenamedMultipartFile;
-import com.centennial.gamepickd.dtos.SearchGameDTO;
+import com.centennial.gamepickd.dtos.*;
 import com.centennial.gamepickd.entities.*;
 import com.centennial.gamepickd.repository.contracts.*;
 import com.centennial.gamepickd.services.contracts.GameService;
@@ -179,6 +176,87 @@ public class GameServiceImpl implements GameService {
 
 
         return gamePage.map(game -> mapper.gameToGameDto(game, averages));
+    }
+
+    @Transactional
+    @CacheEvict(value = "gamesCache", allEntries = true)
+    @Override
+    public void update(UpdateGameDTO updateGameDTO) throws
+            Exceptions.GameNotFoundException,
+            Exceptions.StorageException,
+            Exceptions.ContributorNotFoundException,
+            Exceptions.PublisherNotFoundException,
+            Exceptions.PlatformNotFoundException,
+            Exceptions.GenreNotFoundException
+    {
+        //Fetch the game
+        Game game = gameDAO.findById(updateGameDTO.id())
+                .orElseThrow(() -> new Exceptions.GameNotFoundException("Game not found with id " + updateGameDTO.id()));
+
+        // Validate that the contributor exists
+        Contributor contributor = contributorDAO.findByUsername(updateGameDTO.contributorUsername())
+                .orElseThrow(() -> new Exceptions.ContributorNotFoundException("Contributor not found with username " + updateGameDTO.contributorUsername()));
+
+        // Query the Publisher, and if not found, throw exception
+        Publisher publisher = publisherDAO.findByLabel(PublisherType.fromValue(updateGameDTO.publisher()))
+                .orElseThrow(() -> new Exceptions.PublisherNotFoundException("Publisher not found with name " + updateGameDTO.publisher()));
+
+        // Query the Platforms, and if not found, throw exception PlatformNotFound
+        Set<PlatformType> platformLabels;
+        try {
+            platformLabels = parsePlatforms(updateGameDTO.platforms());
+        } catch (IllegalArgumentException e) {
+            throw new Exceptions.PlatformNotFoundException("One or more provided platforms are invalid: " + updateGameDTO.platforms());
+        }
+
+        // Fetch platform entities from DB
+        Set<Platform> platforms = platformDAO.findByLabels(platformLabels);
+
+        Set<GenreType> genreLabels;
+        try{
+            genreLabels = parseGenres(updateGameDTO.genres());
+        } catch (IllegalArgumentException e) {
+            throw new Exceptions.GenreNotFoundException("One or more provided genres are invalid: " + updateGameDTO.genres());
+        }
+
+        // Fetch genres entities from DB
+        Set<Genre> genres = genreDAO.findByLabels(genreLabels);
+
+        // Handle file upload
+        String filename = null;
+        if (updateGameDTO.coverImage() != null && !updateGameDTO.coverImage().isEmpty()) {
+            try {
+                // Handle current file deletion
+                storageService.delete(updateGameDTO.coverImagePath());
+
+                // Generate unique filename while preserving extension
+                String originalFilename = Objects.requireNonNull(updateGameDTO.coverImage().getOriginalFilename());
+                String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                filename = UUID.randomUUID() + extension;
+
+                // Create a renamed version of the file
+                MultipartFile renamedFile = new RenamedMultipartFile(updateGameDTO.coverImage(), filename);
+
+                // Store the file
+                storageService.store(renamedFile);
+            } catch (Exception e) {
+                throw new Exceptions.StorageException("Failed to store cover image: " + e.getMessage(), e);
+            }
+        }
+
+        // Set updated values on the entity
+        game.setTitle(updateGameDTO.title());
+        game.setDescription(updateGameDTO.description());
+        game.setContributor(contributor);
+        game.setPublisher(publisher);
+        game.setPlatforms(new ArrayList<>(platforms));
+        game.setGenres(new ArrayList<>(genres));
+        if (filename != null) {
+            game.setCoverImagePath(filename);
+        }
+
+        // Persist the updated game
+        gameDAO.update(game);
     }
 
     private Set<GenreType> parseGenres(String genresString) {

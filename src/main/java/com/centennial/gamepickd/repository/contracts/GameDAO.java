@@ -19,4 +19,5 @@ public interface GameDAO {
                                           PublisherType publisher,
                                           Set<PlatformType> platforms,
                                           Pageable pageable);
+    void update(Game game);
 }

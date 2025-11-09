@@ -13,4 +13,5 @@ public interface StorageService {
     Path load(String filename);
     Resource loadAsResource(String filename) throws Exceptions.StorageFileNotFoundException;
     void deleteAll();
+    void delete(String filename) throws Exceptions.StorageFileNotFoundException;
 }

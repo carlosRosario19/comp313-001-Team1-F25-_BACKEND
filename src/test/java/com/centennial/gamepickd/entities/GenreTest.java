@@ -81,7 +81,6 @@ class GenreTest {
         String result = genre.toString();
 
         assertTrue(result.contains("MOBA"));
-        assertTrue(result.contains("Fortnite"));
     }
 
     @Test

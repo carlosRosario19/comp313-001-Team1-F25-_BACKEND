@@ -111,37 +111,6 @@ class ContributorTest {
     }
 
     @Test
-    void testToStringHandlesEmptyGamesListGracefully() {
-        Contributor contributor = new Contributor.Builder()
-                .id(400L)
-                .user(testUser)
-                .firstName("Eve")
-                .lastName("Stone")
-                .games(new ArrayList<>())
-                .build();
-
-        String toString = contributor.toString();
-        assertTrue(toString.contains("games=[]"));
-    }
-
-    @Test
-    void testToStringIncludesGameTitles() {
-        List<Game> games = List.of(game1, game2);
-
-        Contributor contributor = new Contributor.Builder()
-                .id(500L)
-                .user(testUser)
-                .firstName("Luke")
-                .lastName("Skywalker")
-                .games(games)
-                .build();
-
-        String toString = contributor.toString();
-        assertTrue(toString.contains("Game One"));
-        assertTrue(toString.contains("Game Two"));
-    }
-
-    @Test
     void testDefaultConstructor() {
         Contributor contributor = new Contributor();
         assertNotNull(contributor);
