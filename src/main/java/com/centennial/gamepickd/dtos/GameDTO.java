@@ -15,8 +15,12 @@ import java.util.Set;
  * @param id
  * @param title
  * @param description
+ * @param rateAverage
  * @param coverImagePath
  * @param genres
+ * @param publisher
+ * @param platforms
+ * @param postedAt
  */
 public record GameDTO(
         @NotNull
@@ -25,6 +29,8 @@ public record GameDTO(
         String title,
         @NotBlank
         String description,
+        @NotNull
+        double rateAverage,
         @NotBlank
         String coverImagePath,
         @NotEmpty

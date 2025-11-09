@@ -11,9 +11,7 @@ import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Repository
 public class ReviewDaoDynamoDbImpl implements ReviewDAO {
@@ -122,6 +120,48 @@ public class ReviewDaoDynamoDbImpl implements ReviewDAO {
         } catch (Exception e) {
             logger.error("Failed to fetch review by id {}: {}", reviewId, e.getMessage(), e);
             return Optional.empty();
+        }
+    }
+
+    @Override
+    public Map<Long, Double> calculateAverageRateForGames(Set<Long> gameIds) {
+        Map<Long, Double> averages = new HashMap<>();
+        if (gameIds.isEmpty()) return averages;
+
+        try {
+            DynamoDbIndex<Review> gameIdIndex = reviewTable.index("gameId-timeStamp-index");
+
+            Map<Long, Integer> sumMap = new HashMap<>();
+            Map<Long, Integer> countMap = new HashMap<>();
+
+            // For each gameId, query the GSI
+            for (Long gameId : gameIds) {
+                var results = gameIdIndex.query(r ->
+                        r.queryConditional(QueryConditional.keyEqualTo(
+                                Key.builder().partitionValue(gameId).build()
+                        ))
+                );
+
+                for (var page : results) {
+                    for (Review review : page.items()) {
+                        sumMap.put(gameId, sumMap.getOrDefault(gameId, 0) + review.getRate());
+                        countMap.put(gameId, countMap.getOrDefault(gameId, 0) + 1);
+                    }
+                }
+            }
+
+            // Compute averages
+            for (Long gameId : gameIds) {
+                int sum = sumMap.getOrDefault(gameId, 0);
+                int count = countMap.getOrDefault(gameId, 0);
+                averages.put(gameId, count == 0 ? 0.0 : ((double) sum / count));
+            }
+
+            return averages;
+
+        } catch (Exception e) {
+            logger.error("Failed to calculate average rates for gameIds {}: {}", gameIds, e.getMessage(), e);
+            return averages;
         }
     }
 }

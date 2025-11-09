@@ -8,6 +8,7 @@ import com.centennial.gamepickd.entities.Game;
 import com.centennial.gamepickd.entities.Genre;
 import com.centennial.gamepickd.entities.User;
 import com.centennial.gamepickd.repository.contracts.*;
+import com.centennial.gamepickd.services.contracts.ReviewService;
 import com.centennial.gamepickd.services.contracts.StorageService;
 import com.centennial.gamepickd.services.impl.GameServiceImpl;
 import com.centennial.gamepickd.util.Exceptions;
@@ -51,6 +52,9 @@ class GameServiceTest {
     private PlatformDAO platformDAO;
 
     @Mock
+    private ReviewService reviewService;
+
+    @Mock
     private StorageService storageService;
 
     @InjectMocks
@@ -64,7 +68,7 @@ class GameServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         Mapper mapper = new Mapper();
-        gameService = new GameServiceImpl(gameDAO, genreDAO, contributorDAO, publisherDAO, platformDAO, storageService, mapper);
+        gameService = new GameServiceImpl(gameDAO, genreDAO, contributorDAO, publisherDAO, platformDAO, storageService, reviewService, mapper);
 
         coverImage = new MockMultipartFile(
                 "coverImage",

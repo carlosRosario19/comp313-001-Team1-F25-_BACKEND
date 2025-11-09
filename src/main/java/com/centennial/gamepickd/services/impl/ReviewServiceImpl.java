@@ -17,6 +17,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -66,7 +67,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .orElseThrow(() -> new Exceptions.GameNotFoundException("Game not found with id " + gameId));
 
         return reviewDAO.findAllByGameId(gameId).stream()
-                .map(review -> mapper.reviewToReviewDto(review))
+                .map(mapper::reviewToReviewDto)
                 .collect(Collectors.toSet());
     }
 
@@ -94,5 +95,10 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         return review;
+    }
+
+    @Override
+    public Map<Long, Double> getAverageRatesForGames(Set<Long> gameIds) {
+        return reviewDAO.calculateAverageRateForGames(gameIds);
     }
 }

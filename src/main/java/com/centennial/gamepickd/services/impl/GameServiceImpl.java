@@ -7,6 +7,7 @@ import com.centennial.gamepickd.dtos.SearchGameDTO;
 import com.centennial.gamepickd.entities.*;
 import com.centennial.gamepickd.repository.contracts.*;
 import com.centennial.gamepickd.services.contracts.GameService;
+import com.centennial.gamepickd.services.contracts.ReviewService;
 import com.centennial.gamepickd.services.contracts.StorageService;
 import com.centennial.gamepickd.util.Exceptions;
 import com.centennial.gamepickd.util.Mapper;
@@ -35,6 +36,7 @@ public class GameServiceImpl implements GameService {
     private final PublisherDAO publisherDAO;
     private final PlatformDAO platformDAO;
     private final StorageService storageService;
+    private final ReviewService reviewService;
     private final Mapper mapper;
     private static final int MAX_PAGE_SIZE = 100;
 
@@ -45,6 +47,7 @@ public class GameServiceImpl implements GameService {
             @Qualifier("publisherDAOJpaImpl") PublisherDAO publisherDAO,
             @Qualifier("platformDAOJpaImpl") PlatformDAO platformDAO,
             @Qualifier("s3StorageService") StorageService storageService,
+            @Qualifier("reviewServiceImpl") ReviewService reviewService,
             Mapper mapper
     ) {
         this.gameDAO = gameDAO;
@@ -53,6 +56,7 @@ public class GameServiceImpl implements GameService {
         this.publisherDAO = publisherDAO;
         this.platformDAO = platformDAO;
         this.storageService = storageService;
+        this.reviewService = reviewService;
         this.mapper = mapper;
     }
 
@@ -165,7 +169,16 @@ public class GameServiceImpl implements GameService {
                 pageable
         );
 
-        return gamePage.map(mapper.gameToGameDTO);
+        // Extract IDs of the games in this page
+        Set<Long> gameIdsInPage = gamePage.stream()
+                .map(Game::getId)
+                .collect(Collectors.toSet());
+
+        // Get averages for only these games
+        Map<Long, Double> averages = reviewService.getAverageRatesForGames(gameIdsInPage);
+
+
+        return gamePage.map(game -> mapper.gameToGameDto(game, averages));
     }
 
     private Set<GenreType> parseGenres(String genresString) {
