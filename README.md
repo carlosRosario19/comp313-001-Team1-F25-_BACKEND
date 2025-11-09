@@ -127,6 +127,25 @@ contributorUsername=contributor
 coverImage=image.jpg
 ```
 
+### PUT `/api/games`
+
+Update an existing game.
+Consumes: multipart/form-data
+This endpoint is only allowed to `{ADMIN, CONTRIBUTOR}` users.
+
+### Request Body Example
+```
+id=5
+title=Dark Souls
+description=A challenging RPG
+genres=RPG,MMORPG
+publisher=electronic arts
+platforms=Nintendo Switch,Nintendo Wii U
+contributorUsername=contributor
+coverImagePath=934e35e5-ca4a-4120-850b-cab212102816.jpg
+coverImage=image.jpg
+```
+
 ### GET `/api/games`
 
 Retrieves paginated and optionally filtered list of games.
