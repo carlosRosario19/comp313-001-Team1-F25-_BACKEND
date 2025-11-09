@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public class UserDAOJpaImpl implements UserDAO {
@@ -45,5 +46,15 @@ public class UserDAOJpaImpl implements UserDAO {
                 .setParameter("username", username)
                 .setParameter("email", email)
                 .getResultList();
+    }
+
+    @Override
+    public Set<User> findAll() {
+        String jpql = "SELECT u FROM User u";
+        List<User> users = entityManager.createQuery(jpql, User.class)
+                .getResultList();
+
+        // Convert List → Set to ensure uniqueness
+        return Set.copyOf(users);
     }
 }
