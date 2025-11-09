@@ -152,6 +152,11 @@ Query Parameters Example
 
 ```/api/games?page=0&size=12&title=Zelda&genres=ADVENTURE&publisher=NINTENDO&platforms=SWITCH```
 
+### DELETE `/api/games/{id}`
+
+Delete an existing game.
+This endpoint is only allowed to `{ADMIN, CONTRIBUTOR}` users.
+
 ### GET `/api/images/{filename}`
 
 Retrieves a stored cover image.
