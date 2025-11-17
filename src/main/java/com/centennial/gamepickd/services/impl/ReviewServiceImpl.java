@@ -3,11 +3,14 @@ package com.centennial.gamepickd.services.impl;
 import com.centennial.gamepickd.dtos.AddReviewDTO;
 import com.centennial.gamepickd.dtos.DeleteReviewDTO;
 import com.centennial.gamepickd.dtos.ReviewDTO;
+import com.centennial.gamepickd.dtos.VoteDTO;
 import com.centennial.gamepickd.entities.Game;
 import com.centennial.gamepickd.entities.Review;
+import com.centennial.gamepickd.entities.Vote;
 import com.centennial.gamepickd.repository.contracts.GameDAO;
 import com.centennial.gamepickd.repository.contracts.ReviewDAO;
 import com.centennial.gamepickd.repository.contracts.UserDAO;
+import com.centennial.gamepickd.repository.contracts.VoteDAO;
 import com.centennial.gamepickd.services.contracts.ReviewService;
 import com.centennial.gamepickd.util.Exceptions;
 import com.centennial.gamepickd.util.Mapper;
@@ -20,6 +23,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -30,6 +34,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final GameDAO gameDAO;
     private final ReviewDAO reviewDAO;
+    private final VoteDAO voteDAO;
     private final Mapper mapper;
     private final SecurityUtils securityUtils;
 
@@ -37,11 +42,13 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewServiceImpl(
             @Qualifier("gameDAOJpaImpl") GameDAO gameDAO,
             @Qualifier("reviewDaoDynamoDbImpl") ReviewDAO reviewDAO,
+            @Qualifier("voteDaoDynamoDbImpl") VoteDAO voteDAO,
             Mapper mapper,
             SecurityUtils securityUtils
     ) {
         this.gameDAO = gameDAO;
         this.reviewDAO = reviewDAO;
+        this.voteDAO = voteDAO;
         this.mapper = mapper;
         this.securityUtils = securityUtils;
     }
@@ -69,8 +76,25 @@ public class ReviewServiceImpl implements ReviewService {
         gameDAO.findById(gameId)
                 .orElseThrow(() -> new Exceptions.GameNotFoundException("Game not found with id " + gameId));
 
-        return reviewDAO.findAllByGameId(gameId).stream()
-                .map(mapper::reviewToReviewDto)
+        // Fetch all reviews for this game
+        Set<Review> reviews = reviewDAO.findAllByGameId(gameId);
+
+        // Fetch all votes once
+        Set<Vote> allVotes = voteDAO.findAll();
+
+        // Group votes by reviewId
+        Map<String, Set<VoteDTO>> votesByReview =
+                allVotes.stream()
+                        .collect(Collectors.groupingBy(
+                                Vote::getReviewId,
+                                Collectors.mapping(
+                                        v -> new VoteDTO(v.getUsername(), v.isInFavor()),
+                                        Collectors.toSet()
+                                )
+                        ));
+
+        return reviews.stream()
+                .map(review -> mapper.reviewToReviewDto(review, votesByReview.getOrDefault(review.getReviewId(), Set.of())))
                 .collect(Collectors.toSet());
     }
 

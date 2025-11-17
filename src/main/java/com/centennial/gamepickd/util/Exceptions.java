@@ -71,4 +71,8 @@ public class Exceptions {
         public ReviewNotFoundException(String message) { super(message);}
     }
 
+    public static class VoteNotFoundException extends Exception {
+        public VoteNotFoundException(String message) { super(message);}
+    }
+
 }

@@ -23,18 +23,11 @@ You need to start the database containers in detached mode:
   ```bash
   docker compose up -d
   ```
-    ```bash
-  docker compose run --rm dynamodb-setup
-  ```
- 
 - **Using Podman Compose**
   ```bash
   podman compose up -d
   ```
-    ```bash
-  podman compose run --rm dynamodb-setup
-  ```
-
+  
 ### 2. Start the Spring Boot Application
 
 Run the Spring Boot application using the Maven Wrapper:
@@ -210,6 +203,25 @@ This endpoint is only allowed to `{ADMIN, CONTRIBUTOR}` users.
     "timeStamp" : "2025-11-08T21:07:32.345124446Z"
 }
 ```
+
+### POST `/api/votes`
+
+Add a new vote.
+
+This endpoint is only allowed to `{MEMBER, CONTRIBUTOR, ADMIN}` users.
+
+#### Request Body
+```json
+{
+    "reviewId" : "review1234",
+    "inFavor" : true
+}
+```
+
+### DELETE `/api/votes/{reviewId}`
+
+Delete an existing vote.
+This endpoint is only allowed to `{MEMBER, CONTRIBUTOR, ADMIN}` users.
 
 ### GET `/api/users`
 

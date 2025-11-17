@@ -11,7 +11,8 @@ public enum Routes {
     PLATFORMS("/api/platforms/**"),
     PUBLISHERS("/api/publishers/**"),
     REVIEWS("/api/reviews/**"),
-    USERS("/api/users/**");
+    USERS("/api/users/**"),
+    VOTES("/api/votes/**");
 
     private final String path;
 

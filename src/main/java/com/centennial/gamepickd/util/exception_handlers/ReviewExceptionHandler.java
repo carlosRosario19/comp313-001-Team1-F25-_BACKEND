@@ -20,4 +20,12 @@ public class ReviewExceptionHandler {
         problemDetail.setInstance(URI.create(request.getRequestURI()));
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
     }
+
+    @ExceptionHandler
+    public ResponseEntity<ProblemDetail> handleVoteNotFoundException(Exceptions.VoteNotFoundException ex, HttpServletRequest request){
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problemDetail.setTitle("Vote Not Found");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
+    }
 }
