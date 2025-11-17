@@ -1,6 +1,7 @@
 package com.centennial.gamepickd.controllers;
 
 import com.centennial.gamepickd.dtos.AddVoteDTO;
+import com.centennial.gamepickd.dtos.DeleteVoteDTO;
 import com.centennial.gamepickd.services.contracts.VoteService;
 import com.centennial.gamepickd.util.Exceptions;
 import jakarta.validation.Valid;
@@ -20,10 +21,12 @@ public class VoteController {
     }
 
     @PostMapping("/votes")
-    public void add(@Valid @RequestBody AddVoteDTO addVoteDTO) throws Exceptions.ReviewNotFoundException
-    {
+    public void add(@Valid @RequestBody AddVoteDTO addVoteDTO) throws Exceptions.ReviewNotFoundException {
         this.voteService.add(addVoteDTO);
     }
 
-
+    @DeleteMapping("/votes/{reviewId}")
+    public void delete(@Valid @PathVariable String reviewId) throws Exceptions.VoteNotFoundException {
+        this.voteService.delete(new DeleteVoteDTO(reviewId));
+    }
 }

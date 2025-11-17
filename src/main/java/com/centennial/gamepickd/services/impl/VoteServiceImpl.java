@@ -1,6 +1,7 @@
 package com.centennial.gamepickd.services.impl;
 
 import com.centennial.gamepickd.dtos.AddVoteDTO;
+import com.centennial.gamepickd.dtos.DeleteVoteDTO;
 import com.centennial.gamepickd.entities.Vote;
 import com.centennial.gamepickd.repository.contracts.ReviewDAO;
 import com.centennial.gamepickd.repository.contracts.VoteDAO;
@@ -37,7 +38,7 @@ public class VoteServiceImpl implements VoteService {
     @Transactional
     @Override
     public void add(AddVoteDTO addVoteDTO) throws Exceptions.ReviewNotFoundException {
-        //Check if the game exists
+        //Check if the review exists
         reviewDAO.findById(addVoteDTO.reviewId())
                 .orElseThrow(() -> new Exceptions.ReviewNotFoundException("Review not found with id " + addVoteDTO.reviewId()));
         // Identify current user
@@ -71,5 +72,22 @@ public class VoteServiceImpl implements VoteService {
         existingVote.setInFavor(newVoteInFavor);
         voteDAO.update(existingVote);
 
+    }
+
+    @Transactional
+    @Override
+    public void delete(DeleteVoteDTO deleteVoteDTO) throws Exceptions.VoteNotFoundException {
+        // Identify current user
+        String currentUsername = securityUtils.getCurrentUsername();
+
+        //Check if the review exists
+        Vote vote = voteDAO.findByReviewIdAndUsername(deleteVoteDTO.reviewId(), currentUsername)
+                .orElseThrow(() -> new Exceptions.VoteNotFoundException(
+                        "No vote found for review ID " + deleteVoteDTO.reviewId() +
+                                " by user '" + currentUsername + "'."
+                ));
+
+        //Delete vote
+        voteDAO.delete(vote);
     }
 }
