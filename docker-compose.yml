@@ -62,8 +62,6 @@ services:
     volumes:
       - ./init-dynamodb.sh:/init-dynamodb.sh
     entrypoint: [ "/bin/sh", "/init-dynamodb.sh" ]
-    profiles:
-      - dynamodb-setup
     restart: "no"
 
 volumes:
