@@ -11,4 +11,5 @@ public interface VoteDAO {
     Optional<Vote> delete(Vote vote);
     Set<Vote> findAllByReview(String reviewId);
     Optional<Vote> findByReviewIdAndUsername(String reviewId, String username);
+    Set<Vote> findAll();
 }

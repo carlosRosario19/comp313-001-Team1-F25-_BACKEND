@@ -3,6 +3,8 @@ package com.centennial.gamepickd.dtos;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.util.Set;
+
 /**
  * @description DTO for retrieving reviews
  * @param reviewId
@@ -11,6 +13,7 @@ import jakarta.validation.constraints.NotNull;
  * @param rate
  * @param username
  * @param gameId
+ * @param votes
  */
 public record ReviewDTO(
         @NotBlank
@@ -24,6 +27,7 @@ public record ReviewDTO(
         @NotBlank
         String username,
         @NotNull
-        long gameId
+        long gameId,
+        Set<VoteDTO> votes
 ) {
 }

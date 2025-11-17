@@ -111,14 +111,15 @@ public class Mapper {
         );
     }
 
-    public ReviewDTO reviewToReviewDto(Review review) {
+    public ReviewDTO reviewToReviewDto(Review review, Set<VoteDTO> votes) {
         return new ReviewDTO(
                 review.getReviewId(),
                 review.getTimeStamp(),
                 review.getComment(),
                 review.getRate(),
                 review.getUsername(),
-                review.getGameId()
+                review.getGameId(),
+                votes
         );
     }
 

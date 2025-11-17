@@ -11,6 +11,7 @@ import com.centennial.gamepickd.util.Mapper;
 import com.centennial.gamepickd.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +36,7 @@ public class VoteServiceImpl implements VoteService {
         this.mapper = mapper;
     }
 
+    @CacheEvict(value = "reviewsCache", allEntries = true)
     @Transactional
     @Override
     public void add(AddVoteDTO addVoteDTO) throws Exceptions.ReviewNotFoundException {
@@ -74,6 +76,7 @@ public class VoteServiceImpl implements VoteService {
 
     }
 
+    @CacheEvict(value = "reviewsCache", allEntries = true)
     @Transactional
     @Override
     public void delete(DeleteVoteDTO deleteVoteDTO) throws Exceptions.VoteNotFoundException {

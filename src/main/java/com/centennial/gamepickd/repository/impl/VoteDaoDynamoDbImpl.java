@@ -120,4 +120,23 @@ public class VoteDaoDynamoDbImpl implements VoteDAO {
             throw e;
         }
     }
+
+    @Override
+    public Set<Vote> findAll() {
+        Set<Vote> votes = new HashSet<>();
+
+        try {
+            voteTable.scan()
+                    .items()
+                    .forEach(votes::add);
+
+            logger.info("Fetched {} total votes", votes.size());
+
+        } catch (Exception e) {
+            logger.error("Error scanning all votes", e);
+            throw e;
+        }
+
+        return votes;
+    }
 }
