@@ -218,6 +218,11 @@ This endpoint is only allowed to `{MEMBER, CONTRIBUTOR, ADMIN}` users.
 }
 ```
 
+### DELETE `/api/votes/{reviewId}`
+
+Delete an existing vote.
+This endpoint is only allowed to `{MEMBER, CONTRIBUTOR, ADMIN}` users.
+
 ### GET `/api/users`
 
 Retrieves all users.
