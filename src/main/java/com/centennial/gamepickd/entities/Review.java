@@ -1,10 +1,7 @@
 package com.centennial.gamepickd.entities;
 
 import org.jspecify.annotations.NullMarked;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 @NullMarked
 @DynamoDbBean
@@ -46,6 +43,7 @@ public class Review {
         this.timeStamp = timeStamp;
     }
 
+    @DynamoDbAttribute("comment")
     public String getComment() {
         return comment;
     }
@@ -54,6 +52,7 @@ public class Review {
         this.comment = comment;
     }
 
+    @DynamoDbAttribute("rate")
     public int getRate() {
         return rate;
     }
@@ -62,6 +61,7 @@ public class Review {
         this.rate = rate;
     }
 
+    @DynamoDbAttribute("username")
     public String getUsername() {
         return username;
     }
@@ -70,6 +70,7 @@ public class Review {
         this.username = username;
     }
 
+    @DynamoDbAttribute("gameId")
     @DynamoDbSecondaryPartitionKey(indexNames = "gameId-timeStamp-index")
     public Long getGameId() {
         return gameId;
