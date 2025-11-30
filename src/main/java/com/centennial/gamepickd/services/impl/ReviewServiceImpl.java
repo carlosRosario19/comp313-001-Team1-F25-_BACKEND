@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +55,10 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Transactional
-    @CacheEvict(value = "reviewsCache", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "reviewsCache", allEntries = true),
+            @CacheEvict(value = "gamesCache", allEntries = true)
+    })
     @Override
     public void add(AddReviewDTO addReviewDTO) throws Exceptions.GameNotFoundException {
 
@@ -99,7 +103,10 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Transactional
-    @CacheEvict(value = "reviewsCache", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "reviewsCache", allEntries = true),
+            @CacheEvict(value = "gamesCache", allEntries = true)
+    })
     @Override
     public void deleteById(DeleteReviewDTO deleteReviewDTO) throws Exceptions.ReviewNotFoundException {
         // Step 1: Identify current user
@@ -136,7 +143,10 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Transactional
-    @CacheEvict(value = "reviewsCache", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "reviewsCache", allEntries = true),
+            @CacheEvict(value = "gamesCache", allEntries = true)
+    })
     @Override
     public void deleteAllByGameId(long gameId) {
         Set<Review> reviews = reviewDAO.findAllByGameId(gameId);
